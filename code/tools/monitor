@@ -1,0 +1,1 @@
+serial_monitor /dev/ttyACM0 9600
