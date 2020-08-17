@@ -126,6 +126,10 @@ void robot_loop(Robot *robot)
     seconds += dt;
 
     static float rpm_right, rpm_left;
+    rpm_right = int0_count * 1.25f / (dt * 9);
+    int0_count = 0;
+    rpm_left = int1_count * 1.25f / (dt * 9);
+    int1_count = 0;
 
     static size_t i = 0;
     i++;
@@ -143,12 +147,6 @@ void robot_loop(Robot *robot)
     }
     oled_update(&robot->oled_config, &robot->oled_data);
 
-    // Without
-    rpm_right = int0_count * 1.25f / (dt * 9);
-    rpm_left = int1_count * 1.25f / (dt * 9);
-
-    int0_count = 0;
-    int1_count = 0;
 }
 
 int main(void)
@@ -161,5 +159,13 @@ int main(void)
 
     while (1) {
         robot_loop(&robot);
+        // Writing to the oled creates enough of a delay
+        // in the loop.
+        // Using a delay function seems to break the timer,
+        // so if I later remove the oled code from the loop,
+        // use a timer callback to run the loop at regular
+        // intervals, but don't rely on it being accurate, so
+        // still use the accurate timer for measuring the
+        // time elapsed.
     }
 }
