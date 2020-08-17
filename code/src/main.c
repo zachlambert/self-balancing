@@ -5,7 +5,10 @@
 #include "zarduino/comms/i2c.h"
 #include "zarduino/module/oled.h"
 
+#include "zarduino/core/interrupt.h"
+
 #include <stdint.h>
+#include <stdio.h>
 
 typedef struct {
     Pin motor_left_pwm;
@@ -17,6 +20,8 @@ typedef struct {
 
     OLEDConfig oled_config;
     OLEDData oled_data;
+
+    float dt;
 } Robot;
 
 Robot robot_create(void)
@@ -35,11 +40,11 @@ void robot_init_motors(Robot *robot)
 {
     gpio_mode_output(robot->motor_left_pwm);
     gpio_mode_output(robot->motor_left_dir);
-    gpio_mode_input(robot->motor_left_feedback);
+    gpio_mode_input_pullup(robot->motor_left_feedback);
 
     gpio_mode_output(robot->motor_right_pwm);
     gpio_mode_output(robot->motor_right_dir);
-    gpio_mode_input(robot->motor_right_feedback);
+    gpio_mode_input_pullup(robot->motor_right_feedback);
 
     timer1_init_as_pwm();
     timer1_set_duty_cycle_a(0.95);
@@ -61,6 +66,18 @@ void set_right_motor(Robot *robot, float duty_cycle, uint8_t dir)
     gpio_write(robot->motor_right_dir, (~dir)&0x01);
 }
 
+size_t int0_count = 0;
+void int0_callback(void)
+{
+    int0_count++;
+}
+
+size_t int1_count = 0;
+void int1_callback(void)
+{
+    int1_count++;
+}
+
 void robot_init(Robot *robot)
 {
     robot_init_motors(robot);
@@ -71,24 +88,54 @@ void robot_init(Robot *robot)
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
     robot->oled_data = oled_create_data(&robot->oled_config);
+
+    interrupt_external_add_callback(
+        INTERRUPT_EXTERNAL_0,
+        INTERRUPT_TYPE_RISING,
+        int0_callback
+    );
+    interrupt_external_add_callback(
+        INTERRUPT_EXTERNAL_1,
+        INTERRUPT_TYPE_RISING,
+        int1_callback
+    );
+
+    robot->dt = 100; // 100 ms
+}
+
+Robot robot;
+void robot_callback(void)
+{
+    static char lines[5][30];
+
+    snprintf(lines[0], 30, "INT0 %u\n", int0_count);
+    snprintf(lines[1], 30, "INT1 %u\n", int1_count);
+    oled_clear(&robot.oled_data);
+    for (size_t i = 0; i < 2; i++) {
+        oled_print_string(
+            &robot.oled_config,&robot.oled_data, lines[i]
+        );
+    }
+    oled_update(&robot.oled_config, &robot.oled_data);
+
+    int0_count = 0;
+    int1_count = 0;
+}
+
+
+void robot_start(Robot *robot)
+{
+    timer0_init_as_timer_ms(robot->dt, robot_callback);
 }
 
 int main(void)
 {
-    Robot robot = robot_create();
+    robot = robot_create();
     robot_init(&robot);
 
-    oled_print_string(
-        &robot.oled_config,&robot.oled_data, "HELLO"
-    );
-    oled_update(&robot.oled_config, &robot.oled_data);
+    set_left_motor(&robot, 0.3, 1);
+    set_right_motor(&robot, 0.3, 1);
 
-    while (1) {
-        set_left_motor(&robot, 0.3, 1);
-        set_right_motor(&robot, 0.3, 0);
-        delay(500);
-        set_left_motor(&robot, 0.3, 0);
-        set_right_motor(&robot, 0.3, 1);
-        delay(500);
-    }
+    robot_start(&robot);
+    while (1) {}
 }
