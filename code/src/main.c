@@ -20,18 +20,16 @@ typedef struct {
 
     OLEDConfig oled_config;
     OLEDData oled_data;
-
-    float dt;
 } Robot;
 
 Robot robot_create(void)
 {
     Robot robot;
     robot.motor_right_pwm = PIN_TIMER1_A;
-    robot.motor_right_dir = PIN_PB7;
+    robot.motor_right_dir = PIN_PD6;
     robot.motor_right_feedback = PIN_INT0;
     robot.motor_left_pwm = PIN_TIMER1_B;
-    robot.motor_left_dir = PIN_PB6;
+    robot.motor_left_dir = PIN_PD5;
     robot.motor_left_feedback = PIN_INT1;
     return robot;
 }
@@ -91,51 +89,77 @@ void robot_init(Robot *robot)
 
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_0,
-        INTERRUPT_TYPE_RISING,
+        INTERRUPT_TYPE_ANY,
         int0_callback
     );
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_1,
-        INTERRUPT_TYPE_RISING,
+        INTERRUPT_TYPE_ANY,
         int1_callback
     );
 
-    robot->dt = 100; // 100 ms
+    timer0_init_as_timer_accurate();
 }
 
-Robot robot;
-void robot_callback(void)
+void robot_loop(Robot *robot)
 {
-    static char lines[5][30];
+    // Each motor cycle outputs 6 pulses -> 12 interrupts
+    // Gear reduction of 45:1
+    // Therefore, 45*12 = 540 interrupts per revolution
+    // Count = num interrupts in dt
+    // interrupts per sec = count / dt
+    // rev per sec = (count/540) / dt
+    //             = count / (dt*540)
+    // rpm = rev per sec * 60
+    //     = count / (dt*9)
+    // BUT, for some reason this gave values 80% of the
+    // measured values, so multiply by 1.25
 
-    snprintf(lines[0], 30, "INT0 %u\n", int0_count);
-    snprintf(lines[1], 30, "INT1 %u\n", int1_count);
-    oled_clear(&robot.oled_data);
-    for (size_t i = 0; i < 2; i++) {
+    static uint64_t current_ticks = 0;
+    static uint64_t prev_ticks, delta_ticks;
+    prev_ticks = current_ticks;
+    current_ticks = timer0_accurate_get_ticks();
+    delta_ticks = current_ticks - prev_ticks;
+    float dt = ((float)delta_ticks) * 64e-9;
+
+    static float seconds = 0;
+    seconds += dt;
+
+    static float rpm_right, rpm_left;
+
+    static size_t i = 0;
+    i++;
+    static char lines[3][30];
+    snprintf(lines[0], 30, "SECONDS: %lu\n", (uint32_t)seconds);
+
+    snprintf(lines[1], 30, "RIGHT RPM: %u\n", (uint16_t)rpm_right);
+    snprintf(lines[2], 30, "LEFT RPM:  %u\n", (uint16_t)rpm_left);
+
+    oled_clear(&robot->oled_data);
+    for (size_t i = 0; i < 3; i++) {
         oled_print_string(
-            &robot.oled_config,&robot.oled_data, lines[i]
+            &robot->oled_config,&robot->oled_data, lines[i]
         );
     }
-    oled_update(&robot.oled_config, &robot.oled_data);
+    oled_update(&robot->oled_config, &robot->oled_data);
+
+    // Without
+    rpm_right = int0_count * 1.25f / (dt * 9);
+    rpm_left = int1_count * 1.25f / (dt * 9);
 
     int0_count = 0;
     int1_count = 0;
 }
 
-
-void robot_start(Robot *robot)
-{
-    timer0_init_as_timer_ms(robot->dt, robot_callback);
-}
-
 int main(void)
 {
-    robot = robot_create();
+    Robot robot = robot_create();
     robot_init(&robot);
 
     set_left_motor(&robot, 0.3, 1);
     set_right_motor(&robot, 0.3, 1);
 
-    robot_start(&robot);
-    while (1) {}
+    while (1) {
+        robot_loop(&robot);
+    }
 }
