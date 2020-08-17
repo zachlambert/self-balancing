@@ -1,11 +1,11 @@
 #include "zarduino/core/pins.h"
 #include "zarduino/timing/timing.h"
 #include "zarduino/timing/delay.h"
+#include "zarduino/core/interrupt.h"
 
 #include "zarduino/comms/i2c.h"
 #include "zarduino/module/oled.h"
-
-#include "zarduino/core/interrupt.h"
+#include "zarduino/module/mpu6050.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -20,6 +20,9 @@ typedef struct {
 
     OLEDConfig oled_config;
     OLEDData oled_data;
+
+    MPU6050Config mpu6050_config;
+    MPU6050Data mpu6050_data;
 } Robot;
 
 Robot robot_create(void)
@@ -87,6 +90,10 @@ void robot_init(Robot *robot)
     oled_init(&robot->oled_config);
     robot->oled_data = oled_create_data(&robot->oled_config);
 
+    robot->mpu6050_config = mpu6050_create_config();
+    mpu6050_init(&robot->mpu6050_config);
+    robot->mpu6050_data = (MPU6050Data){};
+
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_0,
         INTERRUPT_TYPE_ANY,
@@ -131,16 +138,31 @@ void robot_loop(Robot *robot)
     rpm_left = int1_count * 1.25f / (dt * 9);
     int1_count = 0;
 
+    mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
+    mpu6050_calculate_euler(&robot->mpu6050_data);
+
     static size_t i = 0;
     i++;
-    static char lines[3][30];
+    static char lines[6][30];
     snprintf(lines[0], 30, "SECONDS: %lu\n", (uint32_t)seconds);
 
     snprintf(lines[1], 30, "RIGHT RPM: %u\n", (uint16_t)rpm_right);
     snprintf(lines[2], 30, "LEFT RPM:  %u\n", (uint16_t)rpm_left);
+    snprintf(
+        lines[3], 30, "TILT: %d\n",
+        (int16_t)(robot->mpu6050_data.tilt*57.3)
+    );
+    snprintf(
+        lines[4], 30, "TILT VEL: %d\n",
+        (int16_t)robot->mpu6050_data.gyro[0]
+    );
+    snprintf(
+        lines[5], 30, "PAN VEL: %d\n",
+        (int16_t)robot->mpu6050_data.gyro[2]
+    );
 
     oled_clear(&robot->oled_data);
-    for (size_t i = 0; i < 3; i++) {
+    for (size_t i = 0; i < 6; i++) {
         oled_print_string(
             &robot->oled_config,&robot->oled_data, lines[i]
         );
@@ -156,6 +178,8 @@ int main(void)
 
     set_left_motor(&robot, 0.3, 1);
     set_right_motor(&robot, 0.3, 1);
+
+    mpu6050_calibrate(&robot.mpu6050_config);
 
     while (1) {
         robot_loop(&robot);
