@@ -2,6 +2,7 @@
 
 #include "zarduino/timing/timing.h"
 #include "zarduino/comms/i2c.h"
+#include "zarduino/timing/delay.h"
 
 #include "motors.h"
 #include "interface.h"
@@ -37,8 +38,6 @@ void robot_init(Robot *robot)
 
     robot->mpu6050_config = mpu6050_create_config();
     mpu6050_init(&robot->mpu6050_config);
-    robot->mpu6050_data = (MPU6050Data){};
-    mpu6050_calibrate(&robot->mpu6050_config);
 
     timer0_init_as_timer_accurate();
 

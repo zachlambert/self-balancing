@@ -23,7 +23,6 @@ typedef struct {
     float motor_left_vel;
 
     OLEDConfig oled_config;
-    OLEDData oled_data;
 
     MPU6050Config mpu6050_config;
     MPU6050Data mpu6050_data;

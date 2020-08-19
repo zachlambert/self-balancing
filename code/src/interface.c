@@ -30,7 +30,6 @@ void interface_init(Robot *robot)
 {
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
-    robot->oled_data = oled_create_data(&robot->oled_config);
 
     ADCConfig config = adc_create_config();
     adc_initialise(&config);
@@ -59,39 +58,39 @@ void interface_init(Robot *robot)
 #define LINE_BUF_SIZE 50
 void interface_update(Robot *robot, float dt)
 {
-    oled_clear(&robot->oled_data);
+    oled_clear(&robot->oled_config);
 
     static char line[LINE_BUF_SIZE];
 
     static float seconds;
     seconds += dt;
     snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)seconds);
-    oled_print_string(&robot->oled_config, &robot->oled_data, line);
+    oled_print_string(&robot->oled_config, line);
 
     snprintf(
         line, LINE_BUF_SIZE, "PSI: %d %d\n",
         (int16_t)(robot->control_state.psi_1_dot*57.3),
         (int16_t)(robot->control_state.psi_2_dot*57.3)
     );
-    oled_print_string(&robot->oled_config, &robot->oled_data, line);
+    oled_print_string(&robot->oled_config, line);
 
     snprintf(
         line, LINE_BUF_SIZE, "THETA: %d\n",
         (int16_t)(robot->control_state.theta*57.3)
     );
-    oled_print_string(&robot->oled_config, &robot->oled_data, line);
+    oled_print_string(&robot->oled_config, line);
 
     snprintf(
         line, LINE_BUF_SIZE, "THETA_DOT: %d\n",
         (int16_t)(robot->control_state.theta_dot*57.3)
     );
-    oled_print_string(&robot->oled_config, &robot->oled_data, line);
+    oled_print_string(&robot->oled_config, line);
 
     snprintf(
         line, LINE_BUF_SIZE, "PHI_DOT: %d\n",
         (int16_t)(robot->control_state.phi_dot*57.3)
     );
-    oled_print_string(&robot->oled_config, &robot->oled_data, line);
+    oled_print_string(&robot->oled_config, line);
 
     static uint8_t edit_value = 0;
     static uint8_t param_sel = 0;
@@ -133,9 +132,7 @@ void interface_update(Robot *robot, float dt)
             line[0] = 0;
             break;
     }
-    oled_print_string(&robot->oled_config, &robot->oled_data, line);
-
-    oled_update(&robot->oled_config, &robot->oled_data);
+    oled_print_string(&robot->oled_config, line);
 
     if (button_1_pressed) {
         button_1_pressed = 0;
