@@ -13,6 +13,10 @@ typedef struct {
     Pin motor_right_dir;
     Pin motor_right_feedback;
 
+    Pin button_1_pin;
+    Pin button_2_pin;
+    Pin led_red_pin;
+
     float motor_right_vel;
     float motor_left_vel;
 

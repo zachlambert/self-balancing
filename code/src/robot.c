@@ -5,6 +5,7 @@
 
 #include "motors.h"
 #include "interface.h"
+#include "control.h"
 
 Robot robot_create(void)
 {
@@ -15,6 +16,11 @@ Robot robot_create(void)
     robot.motor_left_pwm = PIN_TIMER1_B;
     robot.motor_left_dir = PIN_PD5;
     robot.motor_left_feedback = PIN_INT1;
+
+    robot.button_1_pin = PIN_PD1;
+    robot.button_2_pin = PIN_PD0;
+    robot.led_red_pin = PIN_PC3;
+
     return robot;
 }
 
@@ -33,6 +39,9 @@ void robot_init(Robot *robot)
     // mpu6050_calibrate(&robot.mpu6050_config);
 
     timer0_init_as_timer_accurate();
+
+    motors_set_left(robot, 0.3, 1);
+    motors_set_right(robot, 0.3, 1);
 }
 
 void robot_loop(Robot *robot)
@@ -48,6 +57,8 @@ void robot_loop(Robot *robot)
 
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
     mpu6050_calculate_euler(&robot->mpu6050_data);
+
+    // control_robot(robot, dt);
 
     interface_update(robot, dt);
 }

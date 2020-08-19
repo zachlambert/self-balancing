@@ -5,11 +5,6 @@ int main(void)
     Robot robot = robot_create();
     robot_init(&robot);
 
-    motors_set_left(&robot, 0.3, 1);
-    motors_set_right(&robot, 0.3, 1);
-
-    mpu6050_calibrate(&robot.mpu6050_config);
-
     while (1) {
         robot_loop(&robot);
         // Writing to the oled creates enough of a delay
