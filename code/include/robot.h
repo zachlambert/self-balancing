@@ -5,6 +5,8 @@
 #include "zarduino/module/oled.h"
 #include "zarduino/module/mpu6050.h"
 
+#include "control.h"
+
 typedef struct {
     Pin motor_left_pwm;
     Pin motor_left_dir;
@@ -25,6 +27,8 @@ typedef struct {
 
     MPU6050Config mpu6050_config;
     MPU6050Data mpu6050_data;
+
+    ControlState control_state;
 } Robot;
 
 Robot robot_create(void);
