@@ -2,7 +2,7 @@
 #define CONTROL_H
 
 typedef enum {
-    PID
+    CONTROLLER_TYPE_PID
 } ControllerType;
 
 typedef struct {
@@ -12,6 +12,8 @@ typedef struct {
     float theta;
     float theta_dot;
     float phi_dot;
+    float psi_1_dot;
+    float psi_2_dot;
 
     float motor_left_input;
     float motor_right_input;
@@ -27,10 +29,11 @@ typedef struct {
             float kp, ki, kd, kie_limit;
             float e_prev;
             float kie_sum;
-        } pid_controller;            
+        } controller_pid;
     };
 } ControlState;
 
+ControlState control_create(void);
 void control_update(ControlState *state, float dt);
 
 #endif
