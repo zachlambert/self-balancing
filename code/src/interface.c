@@ -95,53 +95,52 @@ void interface_update(Robot *robot, float dt)
 
     static uint8_t edit_value = 0;
     static uint8_t param_sel = 0;
-    // float adc_input = (float)adc_read_wait() / 1024.0;
-    // switch (param_sel) {
-    //     case 0:
-    //         if (edit_value)
-    //             robot->control_state.controller_pid.kp = adc_input*100;
-    //         snprintf(
-    //             lines[4], 30, "KP = %u\n",
-    //             (uint16_t)(robot->control_state.controller_pid.kp * 1000)
-    //         );
-    //         break;
-    //     case 1:
-    //         if (edit_value)
-    //             robot->control_state.controller_pid.ki = adc_input*100;
-    //         snprintf(
-    //             lines[4], 30, "KI = %u\n",
-    //             (uint16_t)(robot->control_state.controller_pid.ki * 1000)
-    //         );
-    //         break;
-    //     case 2:
-    //         if (edit_value)
-    //             robot->control_state.controller_pid.kd = adc_input*100;
-    //         snprintf(
-    //             lines[4], 30, "KD = %u\n",
-    //             (uint16_t)(robot->control_state.controller_pid.kd * 1000)
-    //         );
-    //         break;
-    //     case 3:
-    //         if (edit_value)
-    //             robot->control_state.controller_pid.kie_limit = adc_input*100;
-    //         snprintf(
-    //             lines[4], 30, "KIE_LIM = %u\n",
-    //             (uint16_t)(robot->control_state.controller_pid.kie_limit * 1000)
-    //         );
-    //         break;
-    //     default:
-    //         snprintf(
-    //             lines[4], 30, " - \n"
-    //         );
-    //         break;
-    // }
+    float adc_input = ((float)adc_read_wait()) / 1024.0;
+    switch (param_sel) {
+        case 1:
+            if (edit_value)
+                robot->control_state.controller_pid.kp = adc_input*5;
+            snprintf(
+                line, LINE_BUF_SIZE, "KP = %u\n",
+                (uint16_t)(robot->control_state.controller_pid.kp * 1000)
+            );
+            break;
+        case 2:
+            if (edit_value)
+                robot->control_state.controller_pid.ki = adc_input*5;
+            snprintf(
+                line, LINE_BUF_SIZE, "KI = %u\n",
+                (uint16_t)(robot->control_state.controller_pid.ki * 1000)
+            );
+            break;
+        case 3:
+            if (edit_value)
+                robot->control_state.controller_pid.kd = adc_input*5;
+            snprintf(
+                line, LINE_BUF_SIZE, "KD = %u\n",
+                (uint16_t)(robot->control_state.controller_pid.kd * 1000)
+            );
+            break;
+        case 4:
+            if (edit_value)
+                robot->control_state.controller_pid.kie_limit = adc_input*20;
+            snprintf(
+                line, LINE_BUF_SIZE, "KIE_LIM = %u\n",
+                (uint16_t)(robot->control_state.controller_pid.kie_limit * 1000)
+            );
+            break;
+        default:
+            line[0] = 0;
+            break;
+    }
+    oled_print_string(&robot->oled_config, &robot->oled_data, line);
 
     oled_update(&robot->oled_config, &robot->oled_data);
 
     if (button_1_pressed) {
         button_1_pressed = 0;
 
-        if (param_sel == 3)
+        if (param_sel == 4)
             param_sel = 0;
         else
             param_sel++;
