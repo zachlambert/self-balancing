@@ -29,6 +29,8 @@ Robot robot_create(void)
 
 void robot_init(Robot *robot)
 {
+    gpio_mode_input_pullup(PIN_RESET);
+
     motors_init(robot);
 
     I2CConfig i2c_config = i2c_create_config();

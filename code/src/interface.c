@@ -92,40 +92,83 @@ void interface_update(Robot *robot, float dt)
     );
     oled_print_string(&robot->oled_config, line);
 
+    static float start_value = 0;
+    static float start_adc = 0;
     static uint8_t edit_value = 0;
     static uint8_t param_sel = 0;
-    float adc_input = ((float)adc_read_wait()) / 1024.0;
+    static float adc_input;
+
+    adc_input = ((float)(adc_read_wait()>>2)) / 256.0;
+
+    if (button_1_pressed) {
+        button_1_pressed = 0;
+
+        edit_value = 0;
+        if (param_sel == 4)
+            param_sel = 0;
+        else
+            param_sel++;
+    }
+    if (button_2_pressed) {
+        button_2_pressed = 0;
+
+        if (!edit_value) {
+            edit_value = 1;
+            switch (param_sel) {
+                case 1:
+                    start_value = robot->control_state.controller_pid.kp;
+                    break;
+                case 2:
+                    start_value = robot->control_state.controller_pid.ki;
+                    break;
+                case 3:
+                    start_value = robot->control_state.controller_pid.kd;
+                    break;
+                case 4:
+                    start_value = robot->control_state.controller_pid.kie_limit;
+                    break;
+            }
+            start_adc = ((float)(adc_read_wait()>>2)) / 256.0;
+        } else {
+            edit_value = 0;
+        }
+    }
+
     switch (param_sel) {
         case 1:
             if (edit_value)
-                robot->control_state.controller_pid.kp = adc_input*5;
+                robot->control_state.controller_pid.kp =
+                    start_value + (adc_input-start_adc)*2;
             snprintf(
-                line, LINE_BUF_SIZE, "KP = %u\n",
-                (uint16_t)(robot->control_state.controller_pid.kp * 1000)
+                line, LINE_BUF_SIZE, "KP = %d\n",
+                (int16_t)(robot->control_state.controller_pid.kp * 1000)
             );
             break;
         case 2:
             if (edit_value)
-                robot->control_state.controller_pid.ki = adc_input*5;
+                robot->control_state.controller_pid.ki =
+                    start_value + (adc_input-start_adc)*2;
             snprintf(
-                line, LINE_BUF_SIZE, "KI = %u\n",
-                (uint16_t)(robot->control_state.controller_pid.ki * 1000)
+                line, LINE_BUF_SIZE, "KI = %d\n",
+                (int16_t)(robot->control_state.controller_pid.ki * 1000)
             );
             break;
         case 3:
             if (edit_value)
-                robot->control_state.controller_pid.kd = adc_input*5;
+                robot->control_state.controller_pid.kd =
+                    start_value + (adc_input-start_adc)*2;
             snprintf(
-                line, LINE_BUF_SIZE, "KD = %u\n",
-                (uint16_t)(robot->control_state.controller_pid.kd * 1000)
+                line, LINE_BUF_SIZE, "KD = %d\n",
+                (int16_t)(robot->control_state.controller_pid.kd * 1000)
             );
             break;
         case 4:
             if (edit_value)
-                robot->control_state.controller_pid.kie_limit = adc_input*20;
+                robot->control_state.controller_pid.kie_limit =
+                    start_value + (adc_input-start_adc)*4;
             snprintf(
-                line, LINE_BUF_SIZE, "KIE_LIM = %u\n",
-                (uint16_t)(robot->control_state.controller_pid.kie_limit * 1000)
+                line, LINE_BUF_SIZE, "KIE_LIM = %d\n",
+                (int16_t)(robot->control_state.controller_pid.kie_limit * 1000)
             );
             break;
         default:
@@ -133,20 +176,4 @@ void interface_update(Robot *robot, float dt)
             break;
     }
     oled_print_string(&robot->oled_config, line);
-
-    if (button_1_pressed) {
-        button_1_pressed = 0;
-
-        if (param_sel == 4)
-            param_sel = 0;
-        else
-            param_sel++;
-        gpio_write(robot->led_red_pin, 1);
-    }
-    if (button_2_pressed) {
-        button_2_pressed = 0;
-
-        edit_value = !edit_value;
-        gpio_write(robot->led_red_pin, 0);
-    }
 }
