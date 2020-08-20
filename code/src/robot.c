@@ -2,6 +2,7 @@
 
 #include "zarduino/timing/timing.h"
 #include "zarduino/comms/i2c.h"
+#include "zarduino/comms/spi.h"
 #include "zarduino/timing/delay.h"
 
 #include "motors.h"
@@ -36,10 +37,16 @@ void robot_init(Robot *robot)
     I2CConfig i2c_config = i2c_create_config();
     i2c_init_master(&i2c_config);
 
+    SPIConfig spi_config = spi_create_config();
+    spi_init_master(&spi_config);
+
     interface_init(robot);
 
     robot->mpu6050_config = mpu6050_create_config();
     mpu6050_init(&robot->mpu6050_config);
+
+    robot->radio_config = radio_create_config();
+    radio_init_as_receiver(&robot->radio_config);
 
     timer0_init_as_timer_accurate();
 

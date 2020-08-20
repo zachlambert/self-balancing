@@ -4,6 +4,7 @@
 #include "zarduino/core/pins.h"
 #include "zarduino/module/oled.h"
 #include "zarduino/module/mpu6050.h"
+#include "zarduino/module/radio.h"
 
 #include "control.h"
 
@@ -26,6 +27,8 @@ typedef struct {
 
     MPU6050Config mpu6050_config;
     MPU6050Data mpu6050_data;
+
+    RadioConfig radio_config; 
 
     ControlState control_state;
 } Robot;
