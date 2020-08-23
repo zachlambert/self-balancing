@@ -40,10 +40,6 @@ void motors_init(Robot *robot)
         INTERRUPT_TYPE_ANY,
         int1_callback
     );
-
-    // Temporary
-    motors_set_left(robot, 0.3, 1);
-    motors_set_right(robot, 0.3, 1);
 }
 
 void motors_set_left(Robot *robot, float duty_cycle, uint8_t dir)

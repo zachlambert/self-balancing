@@ -10,28 +10,30 @@
 #include "control.h"
 
 #include <math.h>
+#include <avr/interrupt.h>
 
 Robot robot_create(void)
 {
     Robot robot;
-    robot.motor_right_pwm = PIN_TIMER1_A;
+    robot.motor_right_pwm = PIN_TIMER1_A; //PB1
     robot.motor_right_dir = PIN_PD6;
-    robot.motor_right_feedback = PIN_INT0;
-    robot.motor_left_pwm = PIN_TIMER1_B;
+    robot.motor_right_feedback = PIN_INT0; //PD2
+    robot.motor_left_pwm = PIN_TIMER1_B; //PB2
     robot.motor_left_dir = PIN_PD5;
-    robot.motor_left_feedback = PIN_INT1;
+    robot.motor_left_feedback = PIN_INT1; //PD3
 
-    robot.button_1_pin = PIN_PD1;
-    robot.button_2_pin = PIN_PD0;
-    robot.led_red_pin = PIN_PC3;
+    robot.button_1_pin = PIN_PC1;
+    robot.button_2_pin = PIN_PC2;
+    robot.led_red_pin = PIN_PD4;
+
+    robot.radio_csn_pin = PIN_PD7;
+    robot.radio_ce_pin = PIN_PB0;
 
     return robot;
 }
 
 void robot_init(Robot *robot)
 {
-    gpio_mode_input_pullup(PIN_RESET);
-
     motors_init(robot);
 
     I2CConfig i2c_config = i2c_create_config();
@@ -46,7 +48,17 @@ void robot_init(Robot *robot)
     mpu6050_init(&robot->mpu6050_config);
 
     robot->radio_config = radio_create_config();
+    robot->radio_config.CSN = robot->radio_csn_pin;
+    robot->radio_config.CE = robot->radio_ce_pin;
+    robot->radio_config.IRQ = 0;
+
+    robot->radio_config.rx_base_address = 0xA0000000;
+    robot->radio_config.rx_pipe_addresses[0] = 0x12;
+    robot->radio_config.rx_payload_sizes[0] = 5;
+
     radio_init_as_receiver(&robot->radio_config);
+    delay(10);
+    radio_start(&robot->radio_config);
 
     timer0_init_as_timer_accurate();
 
@@ -59,6 +71,20 @@ void robot_init(Robot *robot)
 
 void robot_loop(Robot *robot)
 {
+    const float v_sensitivity = 0.5/32768.0;
+    const float omega_sensitivity = 6.0/32768.0;
+    RadioRxStatus rx_status;
+    uint8_t rx_payload[5];
+    rx_status = radio_read_rx(&robot->radio_config, rx_payload, 5);
+    if (rx_status != RADIO_RX_STATUS_NOT_USED &&
+        rx_status != RADIO_RX_STATUS_EMPTY)
+    {
+        robot->control_state.v_cmd =
+            (float)(rx_payload[0] << 8 | rx_payload[1]) * v_sensitivity;
+        robot->control_state.omega_cmd =
+            (float)(rx_payload[2] << 8 | rx_payload[3]) * omega_sensitivity;
+    }
+
     static uint64_t current_ticks = 0;
     static uint64_t prev_ticks, delta_ticks;
     prev_ticks = current_ticks;
@@ -83,30 +109,30 @@ void robot_loop(Robot *robot)
     robot->control_state.psi_1_dot = robot->motor_left_vel;
     robot->control_state.psi_2_dot = robot->motor_right_vel;
 
-    control_update(&robot->control_state, dt);
+    // control_update(&robot->control_state, dt);
 
-    if (robot->control_state.motor_left_input > 1)
-        robot->control_state.motor_left_input = 1;
-    if (robot->control_state.motor_left_input < -1)
-        robot->control_state.motor_left_input = -1;
-    if (robot->control_state.motor_right_input > 1)
-        robot->control_state.motor_right_input = 1;
-    if (robot->control_state.motor_right_input < -1)
-        robot->control_state.motor_right_input = -1;
+    // if (robot->control_state.motor_left_input > 1)
+    //     robot->control_state.motor_left_input = 1;
+    // if (robot->control_state.motor_left_input < -1)
+    //     robot->control_state.motor_left_input = -1;
+    // if (robot->control_state.motor_right_input > 1)
+    //     robot->control_state.motor_right_input = 1;
+    // if (robot->control_state.motor_right_input < -1)
+    //     robot->control_state.motor_right_input = -1;
 
-    // Temporary
-    robot->control_state.motor_left_input = 0.5;
-    robot->control_state.motor_right_input = 0.5;
+    // // Temporary
+    // robot->control_state.motor_left_input = 0.5;
+    // robot->control_state.motor_right_input = 0.5;
 
-    if (robot->control_state.motor_left_input > 0)
-        motors_set_left(robot, robot->control_state.motor_left_input, 1);
-    else
-        motors_set_left(robot, -robot->control_state.motor_left_input, 0);
+    // if (robot->control_state.motor_left_input > 0)
+    //     motors_set_left(robot, robot->control_state.motor_left_input, 1);
+    // else
+    //     motors_set_left(robot, -robot->control_state.motor_left_input, 0);
 
-    if (robot->control_state.motor_right_input > 0)
-        motors_set_right(robot, robot->control_state.motor_right_input, 1);
-    else
-        motors_set_right(robot, -robot->control_state.motor_right_input, 0);
+    // if (robot->control_state.motor_right_input > 0)
+    //     motors_set_right(robot, robot->control_state.motor_right_input, 1);
+    // else
+    //     motors_set_right(robot, -robot->control_state.motor_right_input, 0);
 
     interface_update(robot, dt);
 }

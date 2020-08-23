@@ -20,6 +20,9 @@ typedef struct {
     Pin button_2_pin;
     Pin led_red_pin;
 
+    Pin radio_ce_pin;
+    Pin radio_csn_pin;
+
     float motor_right_vel;
     float motor_left_vel;
 

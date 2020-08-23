@@ -3,6 +3,7 @@
 #include "zarduino/module/oled.h"
 #include "zarduino/core/adc.h"
 #include "zarduino/core/interrupt.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,8 +32,9 @@ void interface_init(Robot *robot)
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
 
-    ADCConfig config = adc_create_config();
-    adc_initialise(&config);
+    ADCConfig adc_config = adc_create_config();
+    adc_config.reference = ADC_REFERENCE_AVCC;
+    adc_initialise(&adc_config);
 
     button_1_pin = robot->button_1_pin;
     button_2_pin = robot->button_2_pin;
@@ -110,6 +112,7 @@ void interface_update(Robot *robot, float dt)
             param_sel++;
     }
     if (button_2_pressed) {
+        gpio_write(robot->led_red_pin, 1);
         button_2_pressed = 0;
 
         if (!edit_value) {
@@ -175,5 +178,12 @@ void interface_update(Robot *robot, float dt)
             line[0] = 0;
             break;
     }
+    oled_print_string(&robot->oled_config, line);
+
+    snprintf(
+        line, LINE_BUF_SIZE, "CMD: %d %d\n",
+        (int16_t)(robot->control_state.v_cmd * 1000),
+        (int16_t)(robot->control_state.omega_cmd * 1000)
+    );
     oled_print_string(&robot->oled_config, line);
 }
