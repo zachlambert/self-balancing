@@ -109,30 +109,26 @@ void robot_loop(Robot *robot)
     robot->control_state.psi_1_dot = robot->motor_left_vel;
     robot->control_state.psi_2_dot = robot->motor_right_vel;
 
-    // control_update(&robot->control_state, dt);
+    control_update(&robot->control_state, dt);
 
-    // if (robot->control_state.motor_left_input > 1)
-    //     robot->control_state.motor_left_input = 1;
-    // if (robot->control_state.motor_left_input < -1)
-    //     robot->control_state.motor_left_input = -1;
-    // if (robot->control_state.motor_right_input > 1)
-    //     robot->control_state.motor_right_input = 1;
-    // if (robot->control_state.motor_right_input < -1)
-    //     robot->control_state.motor_right_input = -1;
+    if (robot->control_state.motor_left_input > 1)
+        robot->control_state.motor_left_input = 1;
+    if (robot->control_state.motor_left_input < -1)
+        robot->control_state.motor_left_input = -1;
+    if (robot->control_state.motor_right_input > 1)
+        robot->control_state.motor_right_input = 1;
+    if (robot->control_state.motor_right_input < -1)
+        robot->control_state.motor_right_input = -1;
 
-    // // Temporary
-    // robot->control_state.motor_left_input = 0.5;
-    // robot->control_state.motor_right_input = 0.5;
+    if (robot->control_state.motor_left_input > 0)
+        motors_set_left(robot, robot->control_state.motor_left_input, 1);
+    else
+        motors_set_left(robot, -robot->control_state.motor_left_input, 0);
 
-    // if (robot->control_state.motor_left_input > 0)
-    //     motors_set_left(robot, robot->control_state.motor_left_input, 1);
-    // else
-    //     motors_set_left(robot, -robot->control_state.motor_left_input, 0);
-
-    // if (robot->control_state.motor_right_input > 0)
-    //     motors_set_right(robot, robot->control_state.motor_right_input, 1);
-    // else
-    //     motors_set_right(robot, -robot->control_state.motor_right_input, 0);
+    if (robot->control_state.motor_right_input > 0)
+        motors_set_right(robot, robot->control_state.motor_right_input, 1);
+    else
+        motors_set_right(robot, -robot->control_state.motor_right_input, 0);
 
     interface_update(robot, dt);
 }

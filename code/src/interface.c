@@ -181,9 +181,9 @@ void interface_update(Robot *robot, float dt)
     oled_print_string(&robot->oled_config, line);
 
     snprintf(
-        line, LINE_BUF_SIZE, "CMD: %d %d\n",
-        (int16_t)(robot->control_state.v_cmd * 1000),
-        (int16_t)(robot->control_state.omega_cmd * 1000)
+        line, LINE_BUF_SIZE, "Mot: %d %d\n",
+        (int16_t)(robot->control_state.motor_left_input * 1000),
+        (int16_t)(robot->control_state.motor_right_input * 1000)
     );
     oled_print_string(&robot->oled_config, line);
 }

@@ -1,0 +1,7 @@
+#!/bin/sh
+cd build
+name=main
+
+avr-objcopy -j .text -j .data -O ihex $name.elf $name.hex
+avr-size --format=avr --mcu=m328p $name.elf
+avrdude -c arduino -P /dev/ttyUSB0 -b 57600 -p m328p -U flash:w:$name.hex:i
