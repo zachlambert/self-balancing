@@ -3,47 +3,49 @@
 #include "zarduino/comms/uart.h"
 #include "zarduino/module/radio.h"
 #include "zarduino/timing/delay.h"
+#include "zarduino/core/adc.h"
 
 int main(void)
 {
-    uart_init();
+    uart_init(0);
+    printf("Starting\n");
 
     SPIConfig spi_config = spi_create_config();
     spi_init_master(&spi_config);
 
     RadioConfig radio_config = radio_create_config();
-    radio_config.CE = PIN_ARDUINO_D8;
-    radio_config.CSN = PIN_ARDUINO_D6;
+    radio_config.CE = PIN_ARDUINO_D10;
+    radio_config.CSN = PIN_ARDUINO_D9;
     radio_config.IRQ = 0;
     radio_config.tx_address = 0xA000000012;
     radio_init_as_transmitter(&radio_config);
     delay(10);
     radio_start(&radio_config);
 
-    float v_cmd, omega_cmd;
-    v_cmd = -0.15;
-    omega_cmd = -2;
+    ADCConfig adc_config = adc_create_config();
+    adc_initialise(&adc_config);
 
     uint8_t tx_payload[5];
 
-    const float v_sensitivity = 0.5/32768.0;
-    const float omega_sensitivity = 6.0/32768.0;
+    Pin pin_vertical = PIN_ARDUINO_A0;
+    Pin pin_horizontal = PIN_ARDUINO_A1;
+
+    int16_t vert_centre = adc_read_wait(pin_vertical);
+    int16_t horiz_centre = adc_read_wait(pin_horizontal);
 
     while (1) {
-        tx_payload[0] = (int16_t)(v_cmd/v_sensitivity)>>8;
-        tx_payload[1] = (int16_t)(v_cmd/v_sensitivity);
-        tx_payload[2] = (int16_t)(omega_cmd/omega_sensitivity)>>8;
-        tx_payload[3] = (int16_t)(omega_cmd/omega_sensitivity);
-        tx_payload[4] = 0x55;
+        int16_t vert = adc_read_wait(pin_vertical) - vert_centre;
+        if (abs(vert) < 5) vert = 0;
+        int16_t horiz = adc_read_wait(pin_horizontal) - horiz_centre;
+        if (abs(horiz) < 5) horiz = 0;
+
+        tx_payload[0] = vert;
+        tx_payload[1] = vert>>8;
+        tx_payload[2] = horiz;
+        tx_payload[3] = horiz>>8;
         radio_write_tx(&radio_config, tx_payload, 5);
 
-        printf("V = %d, Omega = %d\n", (uint16_t)(1000*v_cmd), (uint16_t)(1000*omega_cmd));
-
-        v_cmd += 0.01;
-        if (v_cmd >= 0.15) v_cmd = -0.15;
-        omega_cmd += 0.1;
-        if (omega_cmd >= 2) omega_cmd = -2;
-
-        delay(250);
+        printf("%i %i\n", vert, horiz);
+        delay(100);
     }
 }
