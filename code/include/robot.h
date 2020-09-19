@@ -19,6 +19,7 @@ typedef struct {
     Pin button_1_pin;
     Pin button_2_pin;
     Pin led_red_pin;
+    Pin adc_pin;
 
     Pin radio_ce_pin;
     Pin radio_csn_pin;

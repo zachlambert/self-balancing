@@ -3,6 +3,7 @@
 #include "zarduino/timing/timing.h"
 #include "zarduino/comms/i2c.h"
 #include "zarduino/comms/spi.h"
+#include "zarduino/comms/uart.h"
 #include "zarduino/timing/delay.h"
 
 #include "motors.h"
@@ -25,6 +26,7 @@ Robot robot_create(void)
     robot.button_1_pin = PIN_PC1;
     robot.button_2_pin = PIN_PC2;
     robot.led_red_pin = PIN_PD4;
+    robot.adc_pin = PIN_PC0;
 
     robot.radio_csn_pin = PIN_PD7;
     robot.radio_ce_pin = PIN_PB0;
@@ -34,6 +36,8 @@ Robot robot_create(void)
 
 void robot_init(Robot *robot)
 {
+    uart_init(0);
+
     motors_init(robot);
 
     I2CConfig i2c_config = i2c_create_config();
@@ -71,18 +75,21 @@ void robot_init(Robot *robot)
 
 void robot_loop(Robot *robot)
 {
-    const float v_sensitivity = 0.5/32768.0;
-    const float omega_sensitivity = 6.0/32768.0;
+    int16_t serial_data = robot->control_state.theta*1000;
+    uart_write_int16(serial_data);
+
+    const float v_sensitivity = 0.5/512.0;
+    const float omega_sensitivity = 6.0/513.0;
     RadioRxStatus rx_status;
     uint8_t rx_payload[5];
     rx_status = radio_read_rx(&robot->radio_config, rx_payload, 5);
     if (rx_status != RADIO_RX_STATUS_NOT_USED &&
         rx_status != RADIO_RX_STATUS_EMPTY)
     {
-        robot->control_state.v_cmd =
-            (float)(rx_payload[0] << 8 | rx_payload[1]) * v_sensitivity;
-        robot->control_state.omega_cmd =
-            (float)(rx_payload[2] << 8 | rx_payload[3]) * omega_sensitivity;
+        int16_t vert = rx_payload[0] | rx_payload[1]<<8;
+        int16_t horiz = rx_payload[2] | rx_payload[3]<<8;
+        robot->control_state.v_cmd = (float)vert * v_sensitivity;
+        robot->control_state.omega_cmd = (float)horiz * omega_sensitivity;
     }
 
     static uint64_t current_ticks = 0;

@@ -100,7 +100,7 @@ void interface_update(Robot *robot, float dt)
     static uint8_t param_sel = 0;
     static float adc_input;
 
-    adc_input = ((float)(adc_read_wait()>>2)) / 256.0;
+    adc_input = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
 
     if (button_1_pressed) {
         button_1_pressed = 0;
@@ -131,7 +131,7 @@ void interface_update(Robot *robot, float dt)
                     start_value = robot->control_state.controller_pid.kie_limit;
                     break;
             }
-            start_adc = ((float)(adc_read_wait()>>2)) / 256.0;
+            start_adc = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
         } else {
             edit_value = 0;
         }
@@ -184,6 +184,13 @@ void interface_update(Robot *robot, float dt)
         line, LINE_BUF_SIZE, "Mot: %d %d\n",
         (int16_t)(robot->control_state.motor_left_input * 1000),
         (int16_t)(robot->control_state.motor_right_input * 1000)
+    );
+    oled_print_string(&robot->oled_config, line);
+
+    snprintf(
+        line, LINE_BUF_SIZE, "CMD: %d %d\n",
+        (int16_t)(robot->control_state.v_cmd * 1000),
+        (int16_t)(robot->control_state.omega_cmd * 1000)
     );
     oled_print_string(&robot->oled_config, line);
 }
