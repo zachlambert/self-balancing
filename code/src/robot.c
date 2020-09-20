@@ -25,7 +25,8 @@ Robot robot_create(void)
 
     robot.button_1_pin = PIN_PC1;
     robot.button_2_pin = PIN_PC2;
-    robot.led_red_pin = PIN_PD4;
+    robot.button_3_pin = PIN_PC3;
+    robot.led_pin = PIN_PD4;
     robot.adc_pin = PIN_PC0;
 
     robot.radio_csn_pin = PIN_PD7;
@@ -67,10 +68,6 @@ void robot_init(Robot *robot)
     timer0_init_as_timer_accurate();
 
     robot->control_state = control_create();
-
-    // Temporary
-    motors_set_left(robot, 0.3, 1);
-    motors_set_right(robot, 0.3, 1);
 }
 
 void robot_loop(Robot *robot)

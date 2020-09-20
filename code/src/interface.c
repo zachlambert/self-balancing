@@ -27,6 +27,15 @@ void button_2_callback(void)
     }
 }
 
+volatile uint8_t button_3_pressed;
+Pin button_3_pin;
+void button_3_callback(void)
+{
+    if (gpio_read(button_3_pin)) {
+        button_3_pressed = 1;
+    }
+}
+
 void interface_init(Robot *robot)
 {
     robot->oled_config = oled_create_config();
@@ -38,11 +47,13 @@ void interface_init(Robot *robot)
 
     button_1_pin = robot->button_1_pin;
     button_2_pin = robot->button_2_pin;
+    button_3_pin = robot->button_3_pin;
 
     gpio_mode_input_pullup(robot->button_1_pin);
     gpio_mode_input_pullup(robot->button_2_pin);
-    gpio_mode_output(robot->led_red_pin);
-    gpio_write(robot->led_red_pin, 0);
+    gpio_mode_input_pullup(robot->button_3_pin);
+    gpio_mode_output(robot->led_pin);
+    gpio_write(robot->led_pin, 0);
 
     button_1_pressed = 0;
     button_2_pressed = 0;
@@ -54,6 +65,10 @@ void interface_init(Robot *robot)
     interrupt_pin_add_callback(
         robot->button_2_pin,
         button_2_callback 
+    );
+    interrupt_pin_add_callback(
+        robot->button_3_pin,
+        button_3_callback 
     );
 }
 
@@ -67,31 +82,6 @@ void interface_update(Robot *robot, float dt)
     static float seconds;
     seconds += dt;
     snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)seconds);
-    oled_print_string(&robot->oled_config, line);
-
-    snprintf(
-        line, LINE_BUF_SIZE, "PSI: %d %d\n",
-        (int16_t)(robot->control_state.psi_1_dot*57.3),
-        (int16_t)(robot->control_state.psi_2_dot*57.3)
-    );
-    oled_print_string(&robot->oled_config, line);
-
-    snprintf(
-        line, LINE_BUF_SIZE, "THETA: %d\n",
-        (int16_t)(robot->control_state.theta*57.3)
-    );
-    oled_print_string(&robot->oled_config, line);
-
-    snprintf(
-        line, LINE_BUF_SIZE, "THETA_DOT: %d\n",
-        (int16_t)(robot->control_state.theta_dot*57.3)
-    );
-    oled_print_string(&robot->oled_config, line);
-
-    snprintf(
-        line, LINE_BUF_SIZE, "PHI_DOT: %d\n",
-        (int16_t)(robot->control_state.phi_dot*57.3)
-    );
     oled_print_string(&robot->oled_config, line);
 
     static float start_value = 0;
@@ -112,7 +102,6 @@ void interface_update(Robot *robot, float dt)
             param_sel++;
     }
     if (button_2_pressed) {
-        gpio_write(robot->led_red_pin, 1);
         button_2_pressed = 0;
 
         if (!edit_value) {
@@ -181,16 +170,14 @@ void interface_update(Robot *robot, float dt)
     oled_print_string(&robot->oled_config, line);
 
     snprintf(
-        line, LINE_BUF_SIZE, "Mot: %d %d\n",
-        (int16_t)(robot->control_state.motor_left_input * 1000),
-        (int16_t)(robot->control_state.motor_right_input * 1000)
-    );
-    oled_print_string(&robot->oled_config, line);
-
-    snprintf(
         line, LINE_BUF_SIZE, "CMD: %d %d\n",
         (int16_t)(robot->control_state.v_cmd * 1000),
         (int16_t)(robot->control_state.omega_cmd * 1000)
     );
     oled_print_string(&robot->oled_config, line);
+
+    if (button_3_pressed) {
+        button_3_pressed = 0;
+        gpio_write(robot->led_pin, 1);
+    }
 }

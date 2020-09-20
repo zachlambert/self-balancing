@@ -16,10 +16,11 @@ typedef struct {
     Pin motor_right_dir;
     Pin motor_right_feedback;
 
+    Pin adc_pin;
     Pin button_1_pin;
     Pin button_2_pin;
-    Pin led_red_pin;
-    Pin adc_pin;
+    Pin button_3_pin;
+    Pin led_pin;
 
     Pin radio_ce_pin;
     Pin radio_csn_pin;
