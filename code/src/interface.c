@@ -41,7 +41,7 @@ void button_3_callback(void)
 void interface_init(Robot *robot)
 {
     UartConfig uart_config = uart_create_config();
-    uart_config.baud_rate = 9600;
+    uart_config.baud_rate = 57600;
     uart_init(&uart_config);
 
     robot->oled_config = oled_create_config();
@@ -124,14 +124,16 @@ void interface_update(Robot *robot, float dt)
         snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)robot->seconds);
         oled_print_string(&robot->oled_config, line);
 
+        // Need a delay between serial writes
+        // I have no idea why, but its the only way I found to get it to work
         uart_write_int32(robot->seconds * 10000);
-        while (!(UCSR0A & 1<<TXC0));
+        delay_us(100);
         uart_write_int32(robot->control_state.theta * 10000);
-        while (!(UCSR0A & 1<<TXC0));
+        delay_us(100);
         uart_write_int32(robot->control_state.theta_dot * 10000);
-        while (!(UCSR0A & 1<<TXC0));
+        delay_us(100);
         uart_write_int32(robot->control_state.phi_dot * 10000);
-        while (!(UCSR0A & 1<<TXC0));
+        delay_us(100);
     }
 
     if (robot->state != ROBOT_STATE_CONTROL) return;

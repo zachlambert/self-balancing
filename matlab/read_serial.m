@@ -1,9 +1,14 @@
-s = serialport("/dev/ttyUSB0", 9600);
-N = 20*4;
+% Will only work if you've flushed previous data from the
+% serial port, and the first new data is from the robot
+% flush(s) doesn't work
+% Can do: cat /dev/ttyUSB0
+
+s = serialport("/dev/ttyUSB0", 57600);
+N = 80*4;
 data = read(s, N, "int32");
 % Should need to just divide by 10000, but for some reason the values
 % matlab gives back are 40000 times larger.
-data = data / 4e8;
+data = data / 10000;
 delete(s);
 clear s;
 t = data(1:4:N);
