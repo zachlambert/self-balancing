@@ -95,15 +95,13 @@ void robot_loop(Robot *robot)
 
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
 
-    static float theta;
-    theta = atan2(
+    robot->control_state.theta = atan2(
         -robot->mpu6050_data.accel[0], robot->mpu6050_data.accel[2]
     );
-    robot->control_state.theta = theta;
     robot->control_state.theta_dot = robot->mpu6050_data.gyro[1] * 0.01745;
     robot->control_state.phi_dot =
-        cos(theta) * robot->mpu6050_data.gyro[2] * 0.01745
-        - sin(theta) * robot->mpu6050_data.gyro[0] * 0.01745;
+        cos(robot->control_state.theta) * robot->mpu6050_data.gyro[2] * 0.01745
+        - sin(robot->control_state.theta) * robot->mpu6050_data.gyro[0] * 0.01745;
 
     robot->control_state.psi_1_dot = robot->motor_left_vel;
     robot->control_state.psi_2_dot = robot->motor_right_vel;

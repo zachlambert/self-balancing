@@ -4,6 +4,7 @@
 #include "zarduino/core/adc.h"
 #include "zarduino/core/interrupt.h"
 #include "zarduino/comms/uart.h"
+#include "zarduino/timing/delay.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -39,7 +40,9 @@ void button_3_callback(void)
 
 void interface_init(Robot *robot)
 {
-    uart_init(0);
+    UartConfig uart_config = uart_create_config();
+    uart_config.baud_rate = 9600;
+    uart_init(&uart_config);
 
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
@@ -83,6 +86,8 @@ void interface_update(Robot *robot, float dt)
         robot->state = (robot->state + 1) % ROBOT_STATE_COUNT;
         // LED on with active states, which are odd states
         gpio_write(robot->led_pin, robot->state % 2);
+        // Reset timer
+        robot->seconds = 0;
     }
 
     static char line[LINE_BUF_SIZE];
@@ -113,8 +118,25 @@ void interface_update(Robot *robot, float dt)
     }
     oled_print_string(&robot->oled_config, line);
 
-    snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)robot->seconds);
-    oled_print_string(&robot->oled_config, line);
+    if (robot->state % 2) {
+        // For active states, display time and write data to serial
+
+        snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)robot->seconds);
+        oled_print_string(&robot->oled_config, line);
+
+        uart_write_int32(robot->seconds * 10000);
+        while (!(UCSR0A & 1<<TXC0));
+        uart_write_int32(robot->control_state.theta * 10000);
+        while (!(UCSR0A & 1<<TXC0));
+        uart_write_int32(robot->control_state.theta_dot * 10000);
+        while (!(UCSR0A & 1<<TXC0));
+        uart_write_int32(robot->control_state.phi_dot * 10000);
+        while (!(UCSR0A & 1<<TXC0));
+    }
+
+    if (robot->state != ROBOT_STATE_CONTROL) return;
+
+    // Only applies to control loop state
 
     static float start_value = 0;
     static float start_adc = 0;
@@ -126,29 +148,26 @@ void interface_update(Robot *robot, float dt)
 
     if (button_1_pressed) {
         button_1_pressed = 0;
-
         edit_value = 0;
-        if (param_sel == 4)
-            param_sel = 0;
-        else
-            param_sel++;
+        param_sel = (param_sel + 1) % 4;
     }
+
     if (button_2_pressed) {
         button_2_pressed = 0;
 
         if (!edit_value) {
             edit_value = 1;
             switch (param_sel) {
-                case 1:
+                case 0:
                     start_value = robot->control_state.controller_pid.kp;
                     break;
-                case 2:
+                case 1:
                     start_value = robot->control_state.controller_pid.ki;
                     break;
-                case 3:
+                case 2:
                     start_value = robot->control_state.controller_pid.kd;
                     break;
-                case 4:
+                case 3:
                     start_value = robot->control_state.controller_pid.kie_limit;
                     break;
             }
@@ -159,7 +178,7 @@ void interface_update(Robot *robot, float dt)
     }
 
     switch (param_sel) {
-        case 1:
+        case 0:
             if (edit_value)
                 robot->control_state.controller_pid.kp =
                     start_value + (adc_input-start_adc)*2;
@@ -168,7 +187,7 @@ void interface_update(Robot *robot, float dt)
                 (int16_t)(robot->control_state.controller_pid.kp * 1000)
             );
             break;
-        case 2:
+        case 1:
             if (edit_value)
                 robot->control_state.controller_pid.ki =
                     start_value + (adc_input-start_adc)*2;
@@ -177,7 +196,7 @@ void interface_update(Robot *robot, float dt)
                 (int16_t)(robot->control_state.controller_pid.ki * 1000)
             );
             break;
-        case 3:
+        case 2:
             if (edit_value)
                 robot->control_state.controller_pid.kd =
                     start_value + (adc_input-start_adc)*2;
@@ -186,7 +205,7 @@ void interface_update(Robot *robot, float dt)
                 (int16_t)(robot->control_state.controller_pid.kd * 1000)
             );
             break;
-        case 4:
+        case 3:
             if (edit_value)
                 robot->control_state.controller_pid.kie_limit =
                     start_value + (adc_input-start_adc)*4;
