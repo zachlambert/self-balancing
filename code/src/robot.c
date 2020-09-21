@@ -3,7 +3,6 @@
 #include "zarduino/timing/timing.h"
 #include "zarduino/comms/i2c.h"
 #include "zarduino/comms/spi.h"
-#include "zarduino/comms/uart.h"
 #include "zarduino/timing/delay.h"
 
 #include "motors.h"
@@ -37,8 +36,6 @@ Robot robot_create(void)
 
 void robot_init(Robot *robot)
 {
-    uart_init(0);
-
     motors_init(robot);
 
     I2CConfig i2c_config = i2c_create_config();
@@ -72,9 +69,6 @@ void robot_init(Robot *robot)
 
 void robot_loop(Robot *robot)
 {
-    int16_t serial_data = robot->control_state.theta*1000;
-    uart_write_int16(serial_data);
-
     const float v_sensitivity = 0.5/512.0;
     const float omega_sensitivity = 6.0/513.0;
     RadioRxStatus rx_status;

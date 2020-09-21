@@ -27,8 +27,9 @@ void motors_init(Robot *robot)
     gpio_mode_input(robot->motor_right_feedback);
 
     timer1_init_as_pwm();
-    timer1_set_duty_cycle_a(0.95);
-    timer1_set_duty_cycle_b(0.95);
+    // Need to set duty cycle here for some reason
+    timer1_set_duty_cycle_a(0);
+    timer1_set_duty_cycle_b(0);
 
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_0,
@@ -78,6 +79,7 @@ void motors_get_feedback(Robot *robot, float dt)
         robot->motor_right_vel = 0;
     }
     int0_count = 0;
+
     if (int1_count > 0) {
         robot->motor_left_vel = int1_count / (dt*68.755);
     } else {

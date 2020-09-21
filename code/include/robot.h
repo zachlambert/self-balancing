@@ -8,6 +8,16 @@
 
 #include "control.h"
 
+typedef enum {
+    ROBOT_STATE_PRE_CONTROL,
+    ROBOT_STATE_CONTROL,
+    ROBOT_STATE_PRE_PASSIVE,
+    ROBOT_STATE_PASSIVE,
+    ROBOT_STATE_PRE_MOTOR,
+    ROBOT_STATE_MOTOR,
+    ROBOT_STATE_COUNT
+} RobotState;
+
 typedef struct {
     Pin motor_left_pwm;
     Pin motor_left_dir;
@@ -36,6 +46,7 @@ typedef struct {
     RadioConfig radio_config; 
 
     ControlState control_state;
+    RobotState state;
 } Robot;
 
 Robot robot_create(void);

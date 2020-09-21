@@ -3,6 +3,7 @@
 #include "zarduino/module/oled.h"
 #include "zarduino/core/adc.h"
 #include "zarduino/core/interrupt.h"
+#include "zarduino/comms/uart.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -38,6 +39,8 @@ void button_3_callback(void)
 
 void interface_init(Robot *robot)
 {
+    uart_init(0);
+
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
 
