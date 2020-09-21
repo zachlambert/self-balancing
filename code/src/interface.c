@@ -78,13 +78,42 @@ void interface_init(Robot *robot)
 #define LINE_BUF_SIZE 50
 void interface_update(Robot *robot, float dt)
 {
-    oled_clear(&robot->oled_config);
+    if (button_3_pressed) {
+        button_3_pressed = 0;
+        robot->state = (robot->state + 1) % ROBOT_STATE_COUNT;
+        // LED on with active states, which are odd states
+        gpio_write(robot->led_pin, robot->state % 2);
+    }
 
     static char line[LINE_BUF_SIZE];
 
-    static float seconds;
-    seconds += dt;
-    snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)seconds);
+    oled_clear(&robot->oled_config);
+
+    switch (robot->state) {
+        case ROBOT_STATE_PRE_CONTROL:
+            snprintf(line, LINE_BUF_SIZE, "IDLE\n");
+            break;
+        case ROBOT_STATE_CONTROL:
+            snprintf(line, LINE_BUF_SIZE, "CONTROL LOOP\n");
+            break;
+        case ROBOT_STATE_PRE_PASSIVE:
+            snprintf(line, LINE_BUF_SIZE, "PRE PASSIVE\n");
+            break;
+        case ROBOT_STATE_PASSIVE:
+            snprintf(line, LINE_BUF_SIZE, "PASSIVE TEST\n");
+            break;
+        case ROBOT_STATE_PRE_MOTOR:
+            snprintf(line, LINE_BUF_SIZE, "PRE MOTOR\n");
+            break;
+        case ROBOT_STATE_MOTOR:
+            snprintf(line, LINE_BUF_SIZE, "MOTOR TEST\n");
+            break;
+        default:
+            break;
+    }
+    oled_print_string(&robot->oled_config, line);
+
+    snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)robot->seconds);
     oled_print_string(&robot->oled_config, line);
 
     static float start_value = 0;
@@ -178,9 +207,4 @@ void interface_update(Robot *robot, float dt)
         (int16_t)(robot->control_state.omega_cmd * 1000)
     );
     oled_print_string(&robot->oled_config, line);
-
-    if (button_3_pressed) {
-        button_3_pressed = 0;
-        gpio_write(robot->led_pin, 1);
-    }
 }

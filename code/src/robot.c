@@ -89,6 +89,7 @@ void robot_loop(Robot *robot)
     current_ticks = timer0_accurate_get_ticks();
     delta_ticks = current_ticks - prev_ticks;
     float dt = ((float)delta_ticks) * 64e-9;
+    robot->seconds += dt;
 
     motors_get_feedback(robot, dt);
 

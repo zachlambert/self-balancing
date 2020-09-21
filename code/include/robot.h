@@ -47,6 +47,7 @@ typedef struct {
 
     ControlState control_state;
     RobotState state;
+    float seconds;
 } Robot;
 
 Robot robot_create(void);
