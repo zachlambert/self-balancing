@@ -127,21 +127,13 @@ void interface_update(Robot *robot, float dt)
         // Need a delay between serial writes
         // I have no idea why, but its the only way I found to get it to work
         uart_write_int32(robot->seconds * 10000);
-        delay_us(100);
         uart_write_int32(robot->control_state.theta * 10000);
-        delay_us(100);
         uart_write_int32(robot->control_state.theta_dot * 10000);
-        delay_us(100);
         uart_write_int32(robot->control_state.phi_dot * 10000);
-        delay_us(100);
-        // uart_write_int32(robot->control_state.psi_1_dot * 10000);
-        // delay_us(100);
-        // uart_write_int32(robot->control_state.psi_2_dot * 10000);
-        // delay_us(100);
+        uart_write_int32(robot->control_state.psi_1_dot * 10000);
+        uart_write_int32(robot->control_state.psi_2_dot * 10000);
         // uart_write_int32(robot->control_state.motor_left_input * 10000);
-        // delay_us(100);
         // uart_write_int32(robot->control_state.motor_right_input * 10000);
-        // delay_us(100);
     }
 
     if (robot->state != ROBOT_STATE_CONTROL) return;
