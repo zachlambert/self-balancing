@@ -139,7 +139,6 @@ void interface_update_data(Robot *robot)
 
 void interface_update_control(Robot *robot)
 {
-    /*
     static float start_value = 0;
     static float start_adc = 0;
     static uint8_t edit_value = 0;
@@ -228,7 +227,6 @@ void interface_update_control(Robot *robot)
         (int16_t)(robot->control_state.omega_cmd * 1000)
     );
     oled_print_string(&robot->oled_config, line);
-    */
 }
 
 void interface_update(Robot *robot)
