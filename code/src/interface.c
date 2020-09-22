@@ -134,6 +134,14 @@ void interface_update(Robot *robot, float dt)
         delay_us(100);
         uart_write_int32(robot->control_state.phi_dot * 10000);
         delay_us(100);
+        // uart_write_int32(robot->control_state.psi_1_dot * 10000);
+        // delay_us(100);
+        // uart_write_int32(robot->control_state.psi_2_dot * 10000);
+        // delay_us(100);
+        // uart_write_int32(robot->control_state.motor_left_input * 10000);
+        // delay_us(100);
+        // uart_write_int32(robot->control_state.motor_right_input * 10000);
+        // delay_us(100);
     }
 
     if (robot->state != ROBOT_STATE_CONTROL) return;

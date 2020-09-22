@@ -65,6 +65,8 @@ void robot_init(Robot *robot)
     timer0_init_as_timer_accurate();
 
     robot->control_state = control_create();
+    robot->state = ROBOT_STATE_PRE_CONTROL;
+    robot->seconds = 0;
 }
 
 void robot_loop(Robot *robot)
@@ -106,7 +108,15 @@ void robot_loop(Robot *robot)
     robot->control_state.psi_1_dot = robot->motor_left_vel;
     robot->control_state.psi_2_dot = robot->motor_right_vel;
 
-    control_update(&robot->control_state, dt);
+    if (robot->state == ROBOT_STATE_CONTROL) {
+        control_update(&robot->control_state, dt);
+    } else if (robot->state == ROBOT_STATE_MOTOR) {
+        robot->control_state.motor_left_input = 1;
+        robot->control_state.motor_right_input = 1;
+    } else {
+        robot->control_state.motor_left_input = 0;
+        robot->control_state.motor_right_input = 0;
+    }
 
     if (robot->control_state.motor_left_input > 1)
         robot->control_state.motor_left_input = 1;

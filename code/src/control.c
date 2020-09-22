@@ -5,10 +5,10 @@ ControlState control_create(void)
 {
     ControlState state;
     state.controller_type = CONTROLLER_TYPE_PID;
-    state.controller_pid.kp = 1;
-    state.controller_pid.ki = 0.4;
-    state.controller_pid.kd = 0; // Makes it unstable
-    state.controller_pid.kie_limit = 10;
+    state.controller_pid.kp = 10;
+    state.controller_pid.ki = 2.8;
+    state.controller_pid.kd = 0.1;
+    state.controller_pid.kie_limit = 20;
     state.controller_pid.e_prev = 0;
     state.controller_pid.kie_sum = 0;
     return state;
@@ -33,6 +33,10 @@ void control_update(ControlState *state, float dt)
         state->controller_pid.kp * e +
         state->controller_pid.kie_sum +
         state->controller_pid.kd * e_deriv;
+
+    // Need to also take psi into account, to try and stabilise with
+    // wheels stationary. Need to add pid parameters for this error too.
+    // TODO
 
     state->motor_left_input = control;
     state->motor_right_input = control;
