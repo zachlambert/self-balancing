@@ -47,10 +47,11 @@ typedef struct {
 
     ControlState control_state;
     RobotState state;
+    float dt;
     float seconds;
 } Robot;
 
-Robot robot_create(void);
+void robot_set_config(Robot *robot);
 void robot_init(Robot *robot);
 void robot_loop(Robot *robot);
 

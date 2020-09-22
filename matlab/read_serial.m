@@ -4,6 +4,7 @@
 % Can do: cat /dev/ttyUSB0
 
 s = serialport("/dev/ttyUSB0", 57600);
+flush(s);
 M = 8;
 N = 10*M;
 data = read(s, N, "int32");

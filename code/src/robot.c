@@ -12,26 +12,23 @@
 #include <math.h>
 #include <avr/interrupt.h>
 
-Robot robot_create(void)
+void robot_set_config(Robot *robot)
 {
-    Robot robot;
-    robot.motor_right_pwm = PIN_TIMER1_A; //PB1
-    robot.motor_right_dir = PIN_PD6;
-    robot.motor_right_feedback = PIN_INT0; //PD2
-    robot.motor_left_pwm = PIN_TIMER1_B; //PB2
-    robot.motor_left_dir = PIN_PD5;
-    robot.motor_left_feedback = PIN_INT1; //PD3
+    robot->motor_right_pwm = PIN_TIMER1_A; //PB1
+    robot->motor_right_dir = PIN_PD6;
+    robot->motor_right_feedback = PIN_INT0; //PD2
+    robot->motor_left_pwm = PIN_TIMER1_B; //PB2
+    robot->motor_left_dir = PIN_PD5;
+    robot->motor_left_feedback = PIN_INT1; //PD3
 
-    robot.button_1_pin = PIN_PC1;
-    robot.button_2_pin = PIN_PC2;
-    robot.button_3_pin = PIN_PC3;
-    robot.led_pin = PIN_PD4;
-    robot.adc_pin = PIN_PC0;
+    robot->button_1_pin = PIN_PC1;
+    robot->button_2_pin = PIN_PC2;
+    robot->button_3_pin = PIN_PC3;
+    robot->led_pin = PIN_PD4;
+    robot->adc_pin = PIN_PC0;
 
-    robot.radio_csn_pin = PIN_PD7;
-    robot.radio_ce_pin = PIN_PB0;
-
-    return robot;
+    robot->radio_csn_pin = PIN_PD7;
+    robot->radio_ce_pin = PIN_PB0;
 }
 
 void robot_init(Robot *robot)
@@ -69,7 +66,7 @@ void robot_init(Robot *robot)
     robot->seconds = 0;
 }
 
-void robot_loop(Robot *robot)
+void robot_loop_radio(Robot *robot)
 {
     const float v_sensitivity = 0.5/512.0;
     const float omega_sensitivity = 6.0/513.0;
@@ -84,7 +81,10 @@ void robot_loop(Robot *robot)
         robot->control_state.v_cmd = (float)vert * v_sensitivity;
         robot->control_state.omega_cmd = (float)horiz * omega_sensitivity;
     }
+}
 
+float robot_loop_time(Robot *robot)
+{
     static uint64_t current_ticks = 0;
     static uint64_t prev_ticks, delta_ticks;
     prev_ticks = current_ticks;
@@ -92,9 +92,12 @@ void robot_loop(Robot *robot)
     delta_ticks = current_ticks - prev_ticks;
     float dt = ((float)delta_ticks) * 64e-9;
     robot->seconds += dt;
+    return dt;
+}
 
+void robot_loop_sensors(Robot *robot, float dt)
+{
     motors_get_feedback(robot, dt);
-
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
 
     robot->control_state.theta = atan2(
@@ -107,7 +110,10 @@ void robot_loop(Robot *robot)
 
     robot->control_state.psi_1_dot = robot->motor_left_vel;
     robot->control_state.psi_2_dot = robot->motor_right_vel;
+}
 
+void robot_loop_control(Robot *robot, float dt)
+{
     if (robot->state == ROBOT_STATE_CONTROL) {
         control_update(&robot->control_state, dt);
     } else if (robot->state == ROBOT_STATE_MOTOR) {
@@ -117,7 +123,10 @@ void robot_loop(Robot *robot)
         robot->control_state.motor_left_input = 0;
         robot->control_state.motor_right_input = 0;
     }
+}
 
+void robot_loop_actuate(Robot *robot)
+{
     if (robot->control_state.motor_left_input > 1)
         robot->control_state.motor_left_input = 1;
     if (robot->control_state.motor_left_input < -1)
@@ -136,7 +145,14 @@ void robot_loop(Robot *robot)
         motors_set_right(robot, robot->control_state.motor_right_input, 1);
     else
         motors_set_right(robot, -robot->control_state.motor_right_input, 0);
+}
 
-    interface_update(robot, dt);
+void robot_loop(Robot *robot)
+{
+    float dt = robot_loop_time(robot);
+    robot_loop_radio(robot);
+    robot_loop_sensors(robot, dt);
+    robot_loop_control(robot, dt);
+    interface_update(robot);
 }
 

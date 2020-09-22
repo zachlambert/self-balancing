@@ -4,6 +4,6 @@
 #include "robot.h"
 
 void interface_init(Robot *robot);
-void interface_update(Robot *robot, float dt);
+void interface_update(Robot *robot);
 
 #endif

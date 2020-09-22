@@ -79,7 +79,9 @@ void interface_init(Robot *robot)
 }
 
 #define LINE_BUF_SIZE 50
-void interface_update(Robot *robot, float dt)
+char line[LINE_BUF_SIZE];
+
+void interface_update_state(Robot *robot)
 {
     if (button_3_pressed) {
         button_3_pressed = 0;
@@ -90,9 +92,6 @@ void interface_update(Robot *robot, float dt)
         robot->seconds = 0;
     }
 
-    static char line[LINE_BUF_SIZE];
-
-    oled_clear(&robot->oled_config);
 
     switch (robot->state) {
         case ROBOT_STATE_PRE_CONTROL:
@@ -117,34 +116,34 @@ void interface_update(Robot *robot, float dt)
             break;
     }
     oled_print_string(&robot->oled_config, line);
+}
 
+void interface_update_data(Robot *robot)
+{
     if (robot->state % 2) {
         // For active states, display time and write data to serial
 
         snprintf(line, LINE_BUF_SIZE, "SECONDS: %lu\n", (uint32_t)robot->seconds);
         oled_print_string(&robot->oled_config, line);
 
-        // Need a delay between serial writes
-        // I have no idea why, but its the only way I found to get it to work
         uart_write_int32(robot->seconds * 10000);
         uart_write_int32(robot->control_state.theta * 10000);
         uart_write_int32(robot->control_state.theta_dot * 10000);
         uart_write_int32(robot->control_state.phi_dot * 10000);
         uart_write_int32(robot->control_state.psi_1_dot * 10000);
         uart_write_int32(robot->control_state.psi_2_dot * 10000);
-        // uart_write_int32(robot->control_state.motor_left_input * 10000);
-        // uart_write_int32(robot->control_state.motor_right_input * 10000);
+        uart_write_int32(robot->control_state.motor_left_input * 10000);
+        uart_write_int32(robot->control_state.motor_right_input * 10000);
     }
+}
 
-    if (robot->state != ROBOT_STATE_CONTROL) return;
-
-    // Only applies to control loop state
-
+void interface_update_control(Robot *robot)
+{
     static float start_value = 0;
     static float start_adc = 0;
     static uint8_t edit_value = 0;
     static uint8_t param_sel = 0;
-    static float adc_input;
+    float adc_input;
 
     adc_input = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
 
@@ -228,4 +227,16 @@ void interface_update(Robot *robot, float dt)
         (int16_t)(robot->control_state.omega_cmd * 1000)
     );
     oled_print_string(&robot->oled_config, line);
+}
+
+void interface_update(Robot *robot)
+{
+    oled_clear(&robot->oled_config);
+
+    interface_update_state(robot);
+    interface_update_data(robot);
+
+    if (robot->state == ROBOT_STATE_CONTROL) {
+        interface_update_control(robot);
+    }
 }
