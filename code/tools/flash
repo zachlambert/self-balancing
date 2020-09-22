@@ -1,6 +1,6 @@
 #!/bin/sh
 cd build
-name=main
+name=pid
 
 avr-objcopy -j .text -j .data -O ihex $name.elf $name.hex
 avr-size --format=avr --mcu=m328p $name.elf
