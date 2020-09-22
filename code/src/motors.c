@@ -43,19 +43,36 @@ void motors_init(Robot *robot)
     );
 }
 
-void motors_set_left(Robot *robot, float duty_cycle, uint8_t dir)
+void motors_set_left(Robot *robot, float signed_duty_cycle)
 {
     // Motor PWM is active low
-    timer1_set_duty_cycle_a(1-duty_cycle);
-    gpio_write(robot->motor_left_dir, dir);
+    if (signed_duty_cycle > 0) {
+        if (signed_duty_cycle > 1) signed_duty_cycle = 1;
+        timer1_set_duty_cycle_a(1-signed_duty_cycle);
+        gpio_write(robot->motor_left_dir, 1);
+    } else if(signed_duty_cycle < 0) {
+        if (signed_duty_cycle < -1) signed_duty_cycle = -1;
+        timer1_set_duty_cycle_a(1+signed_duty_cycle);
+        gpio_write(robot->motor_left_dir, 0);
+    } else {
+        timer1_set_duty_cycle_a(0.999);
+    }
 }
 
-void motors_set_right(Robot *robot, float duty_cycle, uint8_t dir)
+void motors_set_right(Robot *robot, float signed_duty_cycle)
 {
     // Motor PWM is active low
-    timer1_set_duty_cycle_b(1-duty_cycle);
-    // Direction reversed
-    gpio_write(robot->motor_right_dir, (~dir)&0x01);
+    if (signed_duty_cycle > 0) {
+        if (signed_duty_cycle > 1) signed_duty_cycle = 1;
+        timer1_set_duty_cycle_b(1-signed_duty_cycle);
+        gpio_write(robot->motor_right_dir, 0);
+    } else if(signed_duty_cycle < 0) {
+        if (signed_duty_cycle < -1) signed_duty_cycle = -1;
+        timer1_set_duty_cycle_b(1+signed_duty_cycle);
+        gpio_write(robot->motor_right_dir, 1);
+    } else {
+        timer1_set_duty_cycle_b(0.999);
+    }
 }
 
 void motors_get_feedback(Robot *robot, float dt)

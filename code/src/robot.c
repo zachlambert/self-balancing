@@ -69,7 +69,7 @@ void robot_init(Robot *robot)
 void robot_loop_radio(Robot *robot)
 {
     const float v_sensitivity = 0.5/512.0;
-    const float omega_sensitivity = 6.0/513.0;
+    const float omega_sensitivity = 6.0/512.0;
     RadioRxStatus rx_status;
     uint8_t rx_payload[5];
     rx_status = radio_read_rx(&robot->radio_config, rx_payload, 5);
@@ -116,35 +116,20 @@ void robot_loop_control(Robot *robot, float dt)
 {
     if (robot->state == ROBOT_STATE_CONTROL) {
         control_update(&robot->control_state, dt);
-    } else if (robot->state == ROBOT_STATE_MOTOR) {
+        return;
+    } else if (robot->state == ROBOT_STATE_MOTOR && robot->seconds>0.5) {
         robot->control_state.motor_left_input = 1;
         robot->control_state.motor_right_input = 1;
-    } else {
-        robot->control_state.motor_left_input = 0;
-        robot->control_state.motor_right_input = 0;
-    }
+        return;
+    } 
+    robot->control_state.motor_left_input = 0;
+    robot->control_state.motor_right_input = 0;
 }
 
 void robot_loop_actuate(Robot *robot)
 {
-    if (robot->control_state.motor_left_input > 1)
-        robot->control_state.motor_left_input = 1;
-    if (robot->control_state.motor_left_input < -1)
-        robot->control_state.motor_left_input = -1;
-    if (robot->control_state.motor_right_input > 1)
-        robot->control_state.motor_right_input = 1;
-    if (robot->control_state.motor_right_input < -1)
-        robot->control_state.motor_right_input = -1;
-
-    if (robot->control_state.motor_left_input > 0)
-        motors_set_left(robot, robot->control_state.motor_left_input, 1);
-    else
-        motors_set_left(robot, -robot->control_state.motor_left_input, 0);
-
-    if (robot->control_state.motor_right_input > 0)
-        motors_set_right(robot, robot->control_state.motor_right_input, 1);
-    else
-        motors_set_right(robot, -robot->control_state.motor_right_input, 0);
+    motors_set_left(robot, robot->control_state.motor_left_input);
+    motors_set_right(robot, robot->control_state.motor_right_input);
 }
 
 void robot_loop(Robot *robot)
@@ -153,6 +138,7 @@ void robot_loop(Robot *robot)
     robot_loop_radio(robot);
     robot_loop_sensors(robot, dt);
     robot_loop_control(robot, dt);
+    robot_loop_actuate(robot);
     interface_update(robot);
 }
 
