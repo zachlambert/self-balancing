@@ -7,6 +7,7 @@
 #include "zarduino/module/radio.h"
 
 #include "control.h"
+#include "buffer.h"
 
 typedef struct {
     Pin motor_left_pwm;
@@ -30,7 +31,7 @@ typedef struct {
     MPU6050Config mpu6050_config;
     MPU6050Data mpu6050_data;
 
-    RadioConfig radio_config; 
+    RadioConfig radio_config;
 
     State state;
     ControllerHandle controller_handle;

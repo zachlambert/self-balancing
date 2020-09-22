@@ -11,6 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include(tools/target_cmake_scripts/atmega328p.cmake)
 
 add_executable(pid.elf
+    src/core/buffer.c
     src/core/interface.c
     src/core/main.c
     src/core/motors.c
