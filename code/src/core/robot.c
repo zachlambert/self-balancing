@@ -61,8 +61,7 @@ void robot_init(Robot *robot)
 
     timer0_init_as_timer_accurate();
 
-    robot->control_state = control_create();
-    robot->state = ROBOT_STATE_PRE_CONTROL;
+    robot->controller_handle = controller_init();
     robot->seconds = 0;
 }
 
@@ -78,8 +77,8 @@ void robot_loop_radio(Robot *robot)
     {
         int16_t vert = rx_payload[0] | rx_payload[1]<<8;
         int16_t horiz = rx_payload[2] | rx_payload[3]<<8;
-        robot->control_state.v_cmd = (float)vert * v_sensitivity;
-        robot->control_state.omega_cmd = (float)horiz * omega_sensitivity;
+        robot->state.v_cmd = (float)vert * v_sensitivity;
+        robot->state.omega_cmd = (float)horiz * omega_sensitivity;
     }
 }
 
@@ -100,36 +99,22 @@ void robot_loop_sensors(Robot *robot, float dt)
     motors_get_feedback(robot, dt);
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
 
-    robot->control_state.theta = atan2(
+    robot->state.theta = atan2(
         -robot->mpu6050_data.accel[0], robot->mpu6050_data.accel[2]
     );
-    robot->control_state.theta_dot = robot->mpu6050_data.gyro[1] * 0.01745;
-    robot->control_state.phi_dot =
-        cos(robot->control_state.theta) * robot->mpu6050_data.gyro[2] * 0.01745
-        - sin(robot->control_state.theta) * robot->mpu6050_data.gyro[0] * 0.01745;
+    robot->state.theta_dot = robot->mpu6050_data.gyro[1] * 0.01745;
+    robot->state.phi_dot =
+        cos(robot->state.theta) * robot->mpu6050_data.gyro[2] * 0.01745
+        - sin(robot->state.theta) * robot->mpu6050_data.gyro[0] * 0.01745;
 
-    robot->control_state.psi_1_dot = robot->motor_left_vel;
-    robot->control_state.psi_2_dot = robot->motor_right_vel;
-}
-
-void robot_loop_control(Robot *robot, float dt)
-{
-    if (robot->state == ROBOT_STATE_CONTROL) {
-        control_update(&robot->control_state, dt);
-        return;
-    } else if (robot->state == ROBOT_STATE_MOTOR && robot->seconds>0.5) {
-        robot->control_state.motor_left_input = 1;
-        robot->control_state.motor_right_input = 1;
-        return;
-    } 
-    robot->control_state.motor_left_input = 0;
-    robot->control_state.motor_right_input = 0;
+    robot->state.psi_1_dot = robot->motor_left_vel;
+    robot->state.psi_2_dot = robot->motor_right_vel;
 }
 
 void robot_loop_actuate(Robot *robot)
 {
-    motors_set_left(robot, robot->control_state.motor_left_input);
-    motors_set_right(robot, robot->control_state.motor_right_input);
+    motors_set_left(robot, robot->state.motor_cmd_1);
+    motors_set_right(robot, robot->state.motor_cmd_2);
 }
 
 void robot_loop(Robot *robot)
@@ -137,7 +122,9 @@ void robot_loop(Robot *robot)
     float dt = robot_loop_time(robot);
     robot_loop_radio(robot);
     robot_loop_sensors(robot, dt);
-    robot_loop_control(robot, dt);
+
+    controller_update(&robot->state, robot->controller_handle, dt);
+
     robot_loop_actuate(robot);
     interface_update(robot);
 }

@@ -236,7 +236,5 @@ void interface_update(Robot *robot)
     interface_update_state(robot);
     interface_update_data(robot);
 
-    if (robot->state == ROBOT_STATE_CONTROL) {
-        interface_update_control(robot);
-    }
+    // control_update_interface(robot);
 }

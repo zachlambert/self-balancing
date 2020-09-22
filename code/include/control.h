@@ -1,39 +1,17 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-typedef enum {
-    CONTROLLER_TYPE_PID
-} ControllerType;
-
 typedef struct {
-    float v_cmd; // Won't use these at the moment
-    float omega_cmd;
-
-    float theta;
-    float theta_dot;
+    float v_cmd, omega_cmd;
+    float theta, theta_dot;
     float phi_dot;
-    float psi_1_dot;
-    float psi_2_dot;
+    float psi_1_dot, psi_2_dot;
+    float motor_cmd_1, motor_cmd_2;
+} State;
 
-    float motor_left_input;
-    float motor_right_input;
-
-    struct {
-        float R, L, H;
-        // Wheel radius, dist wheel->centre, centre of mass height
-    } dimensions;
-
-    ControllerType controller_type;
-    union {
-        struct {
-            float kp, ki, kd, kie_limit;
-            float e_prev;
-            float kie_sum;
-        } controller_pid;
-    };
-} ControlState;
-
-ControlState control_create(void);
-void control_update(ControlState *state, float dt);
+typedef void *ControllerHandle;
+ControllerHandle controller_init(void);
+void controller_update(State *state, ControllerHandle controller_handle, float dt);
+// void controller_update_interface(Robot *robot);
 
 #endif
