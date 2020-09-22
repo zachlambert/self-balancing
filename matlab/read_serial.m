@@ -6,7 +6,7 @@
 s = serialport("/dev/ttyUSB0", 57600);
 flush(s);
 M = 8;
-N = 50*M;
+N = 200*M;
 data = read(s, N, "int32");
 % Should need to just divide by 10000, but for some reason the values
 % matlab gives back are 40000 times larger.

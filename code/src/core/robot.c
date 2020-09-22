@@ -106,15 +106,12 @@ void robot_loop_sensors(Robot *robot, float dt)
     robot->state.phi_dot =
         cos(robot->state.theta) * robot->mpu6050_data.gyro[2] * 0.01745
         - sin(robot->state.theta) * robot->mpu6050_data.gyro[0] * 0.01745;
-
-    robot->state.psi_1_dot = robot->motor_left_vel;
-    robot->state.psi_2_dot = robot->motor_right_vel;
 }
 
 void robot_loop_actuate(Robot *robot)
 {
-    motors_set_left(robot, robot->state.motor_cmd_1);
-    motors_set_right(robot, robot->state.motor_cmd_2);
+    motors_set_cmd_right(robot, robot->state.motor_cmd_right);
+    motors_set_cmd_left(robot, robot->state.motor_cmd_left);
 }
 
 void robot_loop(Robot *robot)
@@ -123,7 +120,9 @@ void robot_loop(Robot *robot)
     robot_loop_radio(robot);
     robot_loop_sensors(robot, dt);
 
-    controller_update(&robot->state, robot->controller_handle, dt);
+    if (robot->active) {
+        controller_update(&robot->state, robot->controller_handle, dt);
+    }
 
     robot_loop_actuate(robot);
     interface_update(robot);

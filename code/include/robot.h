@@ -25,9 +25,6 @@ typedef struct {
     Pin radio_ce_pin;
     Pin radio_csn_pin;
 
-    float motor_right_vel;
-    float motor_left_vel;
-
     OLEDConfig oled_config;
 
     MPU6050Config mpu6050_config;

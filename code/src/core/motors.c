@@ -4,16 +4,18 @@
 #include "zarduino/core/interrupt.h"
 #include <stdint.h>
 
-size_t int0_count = 0;
-void int0_callback(void)
+int16_t psi_left_count = 0;
+int8_t psi_left_dir = 1;
+void psi_left_callback(void)
 {
-    int0_count++;
+    psi_left_count += psi_left_dir;
 }
 
-size_t int1_count = 0;
-void int1_callback(void)
+int16_t psi_right_count = 0;
+int8_t psi_right_dir = 1;
+void psi_right_callback(void)
 {
-    int1_count++;
+    psi_right_count += psi_right_dir;
 }
 
 void motors_init(Robot *robot)
@@ -34,44 +36,56 @@ void motors_init(Robot *robot)
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_0,
         INTERRUPT_TYPE_ANY,
-        int0_callback
+        psi_right_callback
     );
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_1,
         INTERRUPT_TYPE_ANY,
-        int1_callback
+        psi_left_callback
     );
 }
 
-void motors_set_left(Robot *robot, float signed_duty_cycle)
+void motors_set_cmd_right(Robot *robot, float cmd_right)
 {
     // Motor PWM is active low
-    if (signed_duty_cycle > 0) {
-        if (signed_duty_cycle > 1) signed_duty_cycle = 1;
-        timer1_set_duty_cycle_a(1-signed_duty_cycle);
-        gpio_write(robot->motor_left_dir, 1);
-    } else if(signed_duty_cycle < 0) {
-        if (signed_duty_cycle < -1) signed_duty_cycle = -1;
-        timer1_set_duty_cycle_a(1+signed_duty_cycle);
-        gpio_write(robot->motor_left_dir, 0);
+    if (cmd_right > 0) {
+        if (cmd_right > 1)
+            cmd_right = 1;
+        timer1_set_duty_cycle_b(1 - cmd_right);
+        gpio_write(robot->motor_right_dir, 0);
+        psi_right_dir = 1;
+
+    } else if(cmd_right < 0) {
+        if (cmd_right < -1)
+            cmd_right = -1;
+        timer1_set_duty_cycle_b(1 + cmd_right);
+        gpio_write(robot->motor_right_dir, 1);
+        psi_right_dir = -1;
+
     } else {
-        timer1_set_duty_cycle_a(0.999);
+        timer1_set_duty_cycle_b(0.999);
     }
 }
 
-void motors_set_right(Robot *robot, float signed_duty_cycle)
+void motors_set_cmd_left(Robot *robot, float cmd_left)
 {
     // Motor PWM is active low
-    if (signed_duty_cycle > 0) {
-        if (signed_duty_cycle > 1) signed_duty_cycle = 1;
-        timer1_set_duty_cycle_b(1-signed_duty_cycle);
-        gpio_write(robot->motor_right_dir, 0);
-    } else if(signed_duty_cycle < 0) {
-        if (signed_duty_cycle < -1) signed_duty_cycle = -1;
-        timer1_set_duty_cycle_b(1+signed_duty_cycle);
-        gpio_write(robot->motor_right_dir, 1);
+    if (cmd_left > 0) {
+        if (cmd_left > 1)
+            cmd_left = 1;
+        timer1_set_duty_cycle_a(1 - cmd_left);
+        gpio_write(robot->motor_left_dir, 1);
+        psi_left_dir = 1;
+
+    } else if(cmd_left < 0) {
+        if (cmd_left < -1)
+            cmd_left = -1;
+        timer1_set_duty_cycle_a(1 + cmd_left);
+        gpio_write(robot->motor_left_dir, 0);
+        psi_left_dir = -1;
+
     } else {
-        timer1_set_duty_cycle_b(0.999);
+        timer1_set_duty_cycle_a(0.999);
     }
 }
 
@@ -90,17 +104,8 @@ void motors_get_feedback(Robot *robot, float dt)
     // measured values, so multiply by 1.25
     // rad/s ~= count / (dt*68.755)
 
-    if (int0_count > 0) {
-        robot->motor_right_vel = int0_count / (dt*68.755);
-    } else {
-        robot->motor_right_vel = 0;
-    }
-    int0_count = 0;
-
-    if (int1_count > 0) {
-        robot->motor_left_vel = int1_count / (dt*68.755);
-    } else {
-        robot->motor_left_vel = 0;
-    }
-    int1_count = 0;
+    robot->state.psi_right_dot = ((float)psi_right_count) / (dt*68.755);
+    robot->state.psi_left_dot = ((float)psi_left_count) / (dt*68.755);
+    psi_right_count = 0;
+    psi_left_count = 0;
 }

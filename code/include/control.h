@@ -7,8 +7,8 @@ typedef struct {
     float v_cmd, omega_cmd;
     float theta, theta_dot;
     float phi_dot;
-    float psi_1_dot, psi_2_dot;
-    float motor_cmd_1, motor_cmd_2;
+    float psi_right_dot, psi_left_dot;
+    float motor_cmd_right, motor_cmd_left;
 } State;
 
 typedef void *ControllerHandle;

@@ -6,10 +6,6 @@
 #include "zarduino/comms/uart.h"
 #include "zarduino/timing/delay.h"
 
-#include <stdint.h>
-#include <string.h>
-#include <avr/interrupt.h>
-
 volatile uint8_t button_1_pressed;
 Pin button_1_pin;
 void button_1_callback(void)
@@ -83,10 +79,10 @@ void interface_send_state(Robot *robot)
     uart_write_int32(robot->state.theta * 10000);
     uart_write_int32(robot->state.theta_dot * 10000);
     uart_write_int32(robot->state.phi_dot * 10000);
-    uart_write_int32(robot->state.psi_1_dot * 10000);
-    uart_write_int32(robot->state.psi_2_dot * 10000);
-    uart_write_int32(robot->state.motor_cmd_1 * 10000);
-    uart_write_int32(robot->state.motor_cmd_2 * 10000);
+    uart_write_int32(robot->state.psi_right_dot * 10000);
+    uart_write_int32(robot->state.psi_left_dot * 10000);
+    uart_write_int32(robot->state.motor_cmd_right * 10000);
+    uart_write_int32(robot->state.motor_cmd_left * 10000);
 }
 
 void interface_update_params(Robot *robot)
@@ -95,8 +91,6 @@ void interface_update_params(Robot *robot)
     static float start_adc = 0;
     static uint8_t edit_value = 0;
     static size_t param_i = 0;
-
-    float adc_input = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
 
     if (button_1_pressed) {
         button_1_pressed = 0;
@@ -116,11 +110,13 @@ void interface_update_params(Robot *robot)
         }
     }
 
-    controller_set_param(
-        robot->controller_handle, param_i,
-        start_value + (adc_input - start_adc)*2
-    );
-
+    if (edit_value) {
+        float adc_input = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
+        controller_set_param(
+            robot->controller_handle, param_i,
+            start_value + (adc_input - start_adc)*2
+        );
+    }
     oled_print_string(
         &robot->oled_config,
         controller_get_string(robot->controller_handle, param_i)
@@ -137,6 +133,10 @@ void interface_update(Robot *robot)
         if (robot->active) {
             oled_clear(&robot->oled_config);
             oled_print_string(&robot->oled_config, "ACTIVE\n");
+            oled_clear(&robot->oled_config);
+        } else {
+            robot->state.motor_cmd_right = 0;
+            robot->state.motor_cmd_left = 0;
         }
     }
 
