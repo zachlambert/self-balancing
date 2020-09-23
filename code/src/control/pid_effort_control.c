@@ -6,10 +6,11 @@ typedef struct {
     float kp, ki, kd, kie_limit;
     float e, e_prev, e_deriv, kie_sum;
     float eff, eff_prev;
-    float kp_u;
+    float u_kp, u_ki;
+    float u_e, u_e_prev, u_kie_sum;
 } Controller;
 
-const size_t CONTROLLER_PARAM_COUNT = 5;
+const size_t CONTROLLER_PARAM_COUNT = 6;
 
 ControllerHandle controller_init(void)
 {
@@ -35,12 +36,18 @@ void controller_update(
     else if (controller->kie_sum < -controller->kie_limit)
         controller->kie_sum = -controller->kie_limit;
 
+    controller->u_e_prev = controller->u_e;
+    controller->u_e = 0 - state->psi_left_dot;
+    controller->u_kie_sum +=
+        controller->u_ki * 0.5 * (controller->u_e_prev + controller->u_e) * state->dt;
+
     controller->eff_prev = controller->eff;
     controller->eff =
         controller->kp * controller->e +
         controller->kie_sum +
         controller->kd * controller->e_deriv +
-        controller->kp_u * (-state->psi_right_dot);
+        controller->u_kp * controller->u_e +
+        controller->u_kie_sum;
 
     state->motor_cmd_right += 0.5 * (controller->eff_prev + controller->eff) * state->dt;
     state->motor_cmd_left = state->motor_cmd_right;
@@ -61,7 +68,9 @@ float controller_get_param(
         case 3:
             return controller->kie_limit;
         case 4:
-            return controller->kp_u;
+            return controller->u_kp;
+        case 5:
+            return controller->u_ki;
         default:
             return 0;
     }
@@ -87,7 +96,10 @@ void controller_set_param(
             controller->kie_limit = value;
             break;
         case 4:
-            controller->kp_u = value;
+            controller->u_kp = value;
+            break;
+        case 5:
+            controller->u_ki = value;
             break;
         default:
             break;
@@ -100,6 +112,7 @@ char line[LINE_BUF_SIZE];
 char *controller_get_string(ControllerHandle controller_handle, size_t param_i)
 {
     Controller *controller = controller_handle;
+    return 0;
     switch (param_i) {
         case 0:
             snprintf(
@@ -127,8 +140,14 @@ char *controller_get_string(ControllerHandle controller_handle, size_t param_i)
             break;
         case 4:
             snprintf(
-                line, LINE_BUF_SIZE,"KP_U: %i\n",
-                (int16_t)(1000*controller->kp_u)
+                line, LINE_BUF_SIZE,"U_KP: %i\n",
+                (int16_t)(1000*controller->u_kp)
+            );
+            break;
+        case 5:
+            snprintf(
+                line, LINE_BUF_SIZE,"U_KI: %i\n",
+                (int16_t)(1000*controller->u_ki)
             );
             break;
         default:
