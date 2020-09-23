@@ -63,21 +63,20 @@ void robot_loop_radio(Robot *robot)
     }
 }
 
-float robot_loop_time(Robot *robot)
+void robot_loop_time(State *state)
 {
     static uint64_t current_ticks = 0;
     static uint64_t prev_ticks, delta_ticks;
     prev_ticks = current_ticks;
     current_ticks = timer0_accurate_get_ticks();
     delta_ticks = current_ticks - prev_ticks;
-    float dt = ((float)delta_ticks) * 64e-9;
-    robot->seconds += dt;
-    return dt;
+    state->dt = ((float)delta_ticks) * 64e-9;
+    state->seconds += state->dt;
 }
 
 void robot_loop_sensors(Robot *robot, float dt)
 {
-    motors_get_feedback(robot, dt);
+    motors_get_feedback(robot);
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
 
     robot->state.theta = atan2(
@@ -97,9 +96,9 @@ void robot_loop_actuate(Robot *robot)
 
 void robot_loop(Robot *robot)
 {
-    float dt = robot_loop_time(robot);
+    robot_loop_time(&robot->state);
     robot_loop_radio(robot);
-    robot_loop_sensors(robot, dt);
+    robot_loop_sensors(robot);
 
     if (robot->active) {
         controller_update(&robot->state, robot->controller_handle, dt);

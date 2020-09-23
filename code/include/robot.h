@@ -35,8 +35,6 @@ typedef struct {
 
     State state;
     ControllerHandle controller_handle;
-    float dt;
-    float seconds;
     uint8_t active;
 } Robot;
 

@@ -9,13 +9,14 @@ typedef struct {
     float phi_dot;
     float psi_right_dot, psi_left_dot;
     float motor_cmd_right, motor_cmd_left;
+    float seconds, dt;
 } State;
 
 typedef void *ControllerHandle;
 extern const size_t CONTROLLER_PARAM_COUNT;
 
 ControllerHandle controller_init(void);
-void controller_update(State *state, ControllerHandle controller_handle, float dt);
+void controller_update(State *state, ControllerHandle controller_handle);
 float controller_get_param(
     ControllerHandle conroller_handle, size_t controller_param_i
 );

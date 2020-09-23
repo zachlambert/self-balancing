@@ -24,7 +24,7 @@ void psi_right_callback(void)
 const size_t BUFFER_N = 5;
 const float AVERAGE_WINDOW[5] = {0.2, 0.2, 0.2, 0.2, 0.2};
 
-void motors_init(Robot *robot)
+void motors_init(void)
 {
     gpio_mode_output(MOTOR_LEFT_PWM);
     gpio_mode_output(MOTOR_LEFT_DIR);
@@ -54,20 +54,20 @@ void motors_init(Robot *robot)
     buffer_left = buffer_create(BUFFER_N);
 }
 
-void motors_set_cmd_right(Robot *robot)
+void motors_set_cmd_right(State *state)
 {
     // Motor PWM is active low
-    if (robot->state.motor_cmd_right > 0) {
-        if (robot->state.motor_cmd_right > 1)
-            robot->state.motor_cmd_right = 1;
-        timer1_set_duty_cycle_b(1 - robot->state.motor_cmd_right);
+    if (state->motor_cmd_right > 0) {
+        if (state->motor_cmd_right > 1)
+            state->motor_cmd_right = 1;
+        timer1_set_duty_cycle_b(1 - state->motor_cmd_right);
         gpio_write(MOTOR_RIGHT_DIR, 0);
         psi_right_dir = 1;
 
-    } else if(robot->state.motor_cmd_right < 0) {
-        if (robot->state.motor_cmd_right < -1)
-            robot->state.motor_cmd_right = -1;
-        timer1_set_duty_cycle_b(1 + robot->state.motor_cmd_right);
+    } else if(state->motor_cmd_right < 0) {
+        if (state->motor_cmd_right < -1)
+            state->motor_cmd_right = -1;
+        timer1_set_duty_cycle_b(1 + state->motor_cmd_right);
         gpio_write(MOTOR_RIGHT_DIR, 1);
         psi_right_dir = -1;
 
@@ -76,20 +76,20 @@ void motors_set_cmd_right(Robot *robot)
     }
 }
 
-void motors_set_cmd_left(Robot *robot)
+void motors_set_cmd_left(State *state)
 {
     // Motor PWM is active low
-    if (robot->state.motor_cmd_left > 0) {
-        if (robot->state.motor_cmd_left > 1)
-            robot->state.motor_cmd_left = 1;
-        timer1_set_duty_cycle_a(1 - robot->state.motor_cmd_left);
+    if (state->motor_cmd_left > 0) {
+        if (state->motor_cmd_left > 1)
+            state->motor_cmd_left = 1;
+        timer1_set_duty_cycle_a(1 - state->motor_cmd_left);
         gpio_write(MOTOR_LEFT_DIR, 1);
         psi_left_dir = 1;
 
-    } else if(robot->state.motor_cmd_left < 0) {
-        if (robot->state.motor_cmd_left < -1)
-            robot->state.motor_cmd_left = -1;
-        timer1_set_duty_cycle_a(1 + robot->state.motor_cmd_left);
+    } else if(state->motor_cmd_left < 0) {
+        if (state->motor_cmd_left < -1)
+            state->motor_cmd_left = -1;
+        timer1_set_duty_cycle_a(1 + state->motor_cmd_left);
         gpio_write(MOTOR_LEFT_DIR, 0);
         psi_left_dir = -1;
 
@@ -98,7 +98,7 @@ void motors_set_cmd_left(Robot *robot)
     }
 }
 
-void motors_get_feedback(Robot *robot, float dt)
+void motors_get_feedback(State *state)
 {
     // Each motor cycle outputs 6 pulses -> 12 interrupts
     // Gear reduction of 45:1
@@ -113,15 +113,15 @@ void motors_get_feedback(Robot *robot, float dt)
     // measured values, so multiply by 1.25
     // rad/s ~= count / (dt*68.755)
 
-    buffer_set(&buffer_right, (float)psi_right_count / (dt*68.755));
-    buffer_set(&buffer_left, (float)psi_left_count / (dt*68.755));
+    buffer_set(&buffer_right, (float)psi_right_count / (state->dt*68.755));
+    buffer_set(&buffer_left, (float)psi_left_count / (state->dt*68.755));
     psi_right_count = 0;
     psi_left_count = 0;
 
-    robot->state.psi_right_dot = buffer_convolve_window(
+    state->psi_right_dot = buffer_convolve_window(
         &buffer_right, AVERAGE_WINDOW
     );
-    robot->state.psi_left_dot = buffer_convolve_window(
+    state->psi_left_dot = buffer_convolve_window(
         &buffer_left, AVERAGE_WINDOW
     );
 }
