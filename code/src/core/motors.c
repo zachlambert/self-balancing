@@ -1,4 +1,5 @@
 #include "motors.h"
+#include "config.h"
 #include "buffer.h"
 
 #include "zarduino/timing/timing.h"
@@ -36,8 +37,8 @@ void motors_init(void)
 
     timer1_init_as_pwm();
     // Need to set duty cycle here for some reason
-    timer1_set_duty_cycle_a(0);
-    timer1_set_duty_cycle_b(0);
+    // timer1_set_duty_cycle_a(0);
+    // timer1_set_duty_cycle_b(0);
 
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_0,

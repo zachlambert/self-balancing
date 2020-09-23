@@ -1,5 +1,6 @@
 #include "control.h"
 #include <stdio.h>
+#include <string.h>
 
 typedef struct {
     float kp, ki, kd, kie_limit;
@@ -11,19 +12,13 @@ const size_t CONTROLLER_PARAM_COUNT = 5;
 ControllerHandle controller_init(void)
 {
     Controller *controller = malloc(sizeof(Controller));
-    controller->kp = 1;
-    controller->ki = 0;
-    controller->kd = 0;
-    controller->kie_limit = 20;
-    controller->e_prev = 0;
-    controller->kie_sum = 0;
+    memset(controller, 0, sizeof(Controller));
     return controller;
 }
 
 void controller_update(
     State *state,
-    ControllerHandle controller_handle,
-    float dt)
+    ControllerHandle controller_handle)
 {
     Controller *controller = controller_handle;
 
@@ -32,7 +27,7 @@ void controller_update(
     controller->e_deriv = -state->theta_dot;
 
     controller->kie_sum +=
-        controller->ki * 0.5 * (controller->e_prev + controller->e) * dt;
+        controller->ki * 0.5 * (controller->e_prev + controller->e) * state->dt;
     if (controller->kie_sum > controller->kie_limit)
         controller->kie_sum = controller->kie_limit;
     else if (controller->kie_sum < -controller->kie_limit)

@@ -5,6 +5,7 @@
 #include "zarduino/comms/spi.h"
 #include "zarduino/timing/delay.h"
 
+#include "config.h"
 #include "motors.h"
 #include "interface.h"
 #include "control.h"
@@ -14,7 +15,7 @@
 
 void robot_init(Robot *robot)
 {
-    motors_init(robot);
+    motors_init();
 
     I2CConfig i2c_config = i2c_create_config();
     i2c_init_master(&i2c_config);
@@ -30,7 +31,6 @@ void robot_init(Robot *robot)
     robot->radio_config = radio_create_config();
     robot->radio_config.CSN = RADIO_CSN_PIN;
     robot->radio_config.CE = RADIO_CE_PIN;
-    robot->radio_config.IRQ = 0;
 
     robot->radio_config.rx_base_address = 0xA0000000;
     robot->radio_config.rx_pipe_addresses[0] = 0x12;
@@ -43,7 +43,6 @@ void robot_init(Robot *robot)
     timer0_init_as_timer_accurate();
 
     robot->controller_handle = controller_init();
-    robot->seconds = 0;
 }
 
 void robot_loop_radio(Robot *robot)
@@ -51,7 +50,7 @@ void robot_loop_radio(Robot *robot)
     const float v_sensitivity = 0.5/512.0;
     const float omega_sensitivity = 6.0/512.0;
     RadioRxStatus rx_status;
-    uint8_t rx_payload[5];
+    uint8_t rx_payload[4];
     rx_status = radio_read_rx(&robot->radio_config, rx_payload, 5);
     if (rx_status != RADIO_RX_STATUS_NOT_USED &&
         rx_status != RADIO_RX_STATUS_EMPTY)
@@ -74,9 +73,9 @@ void robot_loop_time(State *state)
     state->seconds += state->dt;
 }
 
-void robot_loop_sensors(Robot *robot, float dt)
+void robot_loop_sensors(Robot *robot)
 {
-    motors_get_feedback(robot);
+    motors_get_feedback(&robot->state);
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
 
     robot->state.theta = atan2(
@@ -88,10 +87,10 @@ void robot_loop_sensors(Robot *robot, float dt)
         - sin(robot->state.theta) * robot->mpu6050_data.gyro[0] * 0.01745;
 }
 
-void robot_loop_actuate(Robot *robot)
+void robot_loop_actuate(State *state)
 {
-    motors_set_cmd_right(robot);
-    motors_set_cmd_left(robot);
+    motors_set_cmd_right(state);
+    motors_set_cmd_left(state);
 }
 
 void robot_loop(Robot *robot)
@@ -101,10 +100,10 @@ void robot_loop(Robot *robot)
     robot_loop_sensors(robot);
 
     if (robot->active) {
-        controller_update(&robot->state, robot->controller_handle, dt);
+        controller_update(&robot->state, robot->controller_handle);
     }
 
-    robot_loop_actuate(robot);
+    robot_loop_actuate(&robot->state);
     interface_update(robot);
 }
 

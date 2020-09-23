@@ -5,8 +5,9 @@
 #include "zarduino/core/interrupt.h"
 #include "zarduino/comms/uart.h"
 #include "zarduino/timing/delay.h"
+#include "config.h"
 
-volatile uint8_t button_1_pressed;
+volatile uint8_t button_1_pressed = 0;
 void button_1_callback(void)
 {
     if (gpio_read(BUTTON_1_PIN)) {
@@ -14,7 +15,7 @@ void button_1_callback(void)
     }
 }
 
-volatile uint8_t button_2_pressed;
+volatile uint8_t button_2_pressed = 0;
 void button_2_callback(void)
 {
     if (gpio_read(BUTTON_2_PIN)) {
@@ -22,7 +23,7 @@ void button_2_callback(void)
     }
 }
 
-volatile uint8_t button_3_pressed;
+volatile uint8_t button_3_pressed = 0;
 void button_3_callback(void)
 {
     if (gpio_read(BUTTON_3_PIN)) {
@@ -49,33 +50,30 @@ void interface_init(Robot *robot)
     gpio_mode_output(LED_PIN);
     gpio_write(LED_PIN, 0);
 
-    button_1_pressed = 0;
-    button_2_pressed = 0;
-
     interrupt_pin_add_callback(
         BUTTON_1_PIN,
-        button_1_callback 
+        button_1_callback
     );
     interrupt_pin_add_callback(
         BUTTON_2_PIN,
-        button_2_callback 
+        button_2_callback
     );
     interrupt_pin_add_callback(
         BUTTON_3_PIN,
-        button_3_callback 
+        button_3_callback
     );
 }
 
-void interface_send_state(Robot *robot)
+void interface_send_state(State *state)
 {
-    uart_write_int32(robot->seconds * 10000);
-    uart_write_int32(robot->state.theta * 10000);
-    uart_write_int32(robot->state.theta_dot * 10000);
-    uart_write_int32(robot->state.phi_dot * 10000);
-    uart_write_int32(robot->state.psi_right_dot * 10000);
-    uart_write_int32(robot->state.psi_left_dot * 10000);
-    uart_write_int32(robot->state.motor_cmd_right * 10000);
-    uart_write_int32(robot->state.motor_cmd_left * 10000);
+    uart_write_int32(state->seconds * 10000);
+    uart_write_int32(state->theta * 10000);
+    uart_write_int32(state->theta_dot * 10000);
+    uart_write_int32(state->phi_dot * 10000);
+    uart_write_int32(state->psi_right_dot * 10000);
+    uart_write_int32(state->psi_left_dot * 10000);
+    uart_write_int32(state->motor_cmd_right * 10000);
+    uart_write_int32(state->motor_cmd_left * 10000);
 }
 
 void interface_update_params(Robot *robot)
@@ -122,9 +120,10 @@ void interface_update(Robot *robot)
         button_3_pressed = 0;
         robot->active = !robot->active;
         gpio_write(LED_PIN, robot->active);
-        robot->seconds = 0;
+        robot->state.seconds = 0;
         if (robot->active) {
             oled_clear(&robot->oled_config);
+            oled_print_string(&robot->oled_config, "\n");
         } else {
             robot->state.motor_cmd_right = 0;
             robot->state.motor_cmd_left = 0;
@@ -132,7 +131,7 @@ void interface_update(Robot *robot)
     }
 
     if (robot->active) {
-        interface_send_state(robot);
+        interface_send_state(&robot->state);
     } else {
         oled_clear(&robot->oled_config);
         interface_update_params(robot);
