@@ -125,8 +125,6 @@ void interface_update(Robot *robot)
         robot->seconds = 0;
         if (robot->active) {
             oled_clear(&robot->oled_config);
-            oled_print_string(&robot->oled_config, "ACTIVE\n");
-            oled_clear(&robot->oled_config);
         } else {
             robot->state.motor_cmd_right = 0;
             robot->state.motor_cmd_left = 0;
@@ -137,7 +135,6 @@ void interface_update(Robot *robot)
         interface_send_state(robot);
     } else {
         oled_clear(&robot->oled_config);
-        oled_print_string(&robot->oled_config, "INACTIVE\n");
         interface_update_params(robot);
     }
 }
