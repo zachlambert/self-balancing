@@ -7,7 +7,6 @@ Buffer buffer_create(size_t N)
     buffer.data = malloc(N * sizeof(float));
     memset(buffer.data, 0, N * sizeof(float));
     buffer.N = N;
-    buffer.tail = 0;
     return buffer;
 }
 

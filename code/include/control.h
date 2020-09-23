@@ -15,6 +15,6 @@ float controller_get_param(
 void controller_set_param(
     ControllerHandle conroller_handle, size_t controller_param_i, float value
 );
-char *controller_get_string(ControllerHandle controller_handle, size_t param_i);
+const char *controller_get_format_string(size_t param_i);
 
 #endif

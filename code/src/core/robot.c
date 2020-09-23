@@ -23,8 +23,6 @@ void robot_init(Robot *robot)
     SPIConfig spi_config = spi_create_config();
     spi_init_master(&spi_config);
 
-    interface_init(robot);
-
     robot->mpu6050_config = mpu6050_create_config();
     mpu6050_init(&robot->mpu6050_config);
 
@@ -43,6 +41,8 @@ void robot_init(Robot *robot)
     timer0_init_as_timer_accurate();
 
     robot->controller_handle = controller_init();
+
+    interface_init(robot);
 }
 
 inline void robot_loop_radio(Robot *robot)

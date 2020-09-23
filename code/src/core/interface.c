@@ -7,6 +7,8 @@
 #include "zarduino/timing/delay.h"
 #include "config.h"
 
+#define INTERFACE_LINE_SIZE 16
+
 volatile uint8_t button_1_pressed = 0;
 void button_1_callback(void)
 {
@@ -39,6 +41,7 @@ void interface_init(Robot *robot)
 
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
+    oled_print_string(&robot->oled_config, "STARTED\n");
 
     ADCConfig adc_config = adc_create_config();
     adc_config.reference = ADC_REFERENCE_AVCC;
@@ -101,17 +104,26 @@ void interface_update_params(Robot *robot)
         }
     }
 
+
     if (edit_value) {
+        char line[INTERFACE_LINE_SIZE];
         float adc_input = ((float)(adc_read_wait(ADC_PIN)>>2)) / 256.0;
-        controller_set_param(
-            robot->controller_handle, param_i,
-            start_value + (adc_input - start_adc)*2
+        float value = start_value + (adc_input - start_adc)*2;
+
+        controller_set_param(robot->controller_handle, param_i, value);
+        snprintf(
+            line,
+            INTERFACE_LINE_SIZE,
+            "PARAM: %f\n",
+            value
+        );
+
+        oled_clear(&robot->oled_config);
+        oled_print_string(
+            &robot->oled_config,
+            line
         );
     }
-    oled_print_string(
-        &robot->oled_config,
-        controller_get_string(robot->controller_handle, param_i)
-    );
 }
 
 void interface_update(Robot *robot)
@@ -133,7 +145,6 @@ void interface_update(Robot *robot)
     if (robot->active) {
         interface_send_state(&robot->state);
     } else {
-        oled_clear(&robot->oled_config);
         interface_update_params(robot);
     }
 }

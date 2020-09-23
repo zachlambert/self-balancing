@@ -7,7 +7,7 @@ typedef struct {
     float e, e_prev, e_deriv, kie_sum;
 } Controller;
 
-const size_t CONTROLLER_PARAM_COUNT = 5;
+const size_t CONTROLLER_PARAM_COUNT = 4;
 
 ControllerHandle controller_init(void)
 {
@@ -55,8 +55,6 @@ float controller_get_param(
             return controller->kd;
         case 3:
             return controller->kie_limit;
-        case 4:
-            return 0;
         default:
             return 0;
     }
@@ -81,53 +79,20 @@ void controller_set_param(
         case 3:
             controller->kie_limit = value;
             break;
-        case 4:
-            break;
         default:
             break;
     }
 }
 
 
-#define LINE_BUF_SIZE 50
-char line[LINE_BUF_SIZE];
-
-char *controller_get_string(ControllerHandle controller_handle, size_t param_i)
+#define FORMAT_STRING_SIZE 16
+const char format_strings[][FORMAT_STRING_SIZE] = {
+    "KP: %i\n",
+    "KI: %i\n",
+    "KD: %i\n",
+    "KIE_LIM: %i\n",
+};
+const char *controller_get_format_string(size_t param_i)
 {
-    Controller *controller = controller_handle;
-    switch (param_i) {
-        case 0:
-            snprintf(
-                line, LINE_BUF_SIZE,"KP: %i\n",
-                (int16_t)(1000*controller->kp)
-            );
-            break;
-        case 1:
-            snprintf(
-                line, LINE_BUF_SIZE,"KI: %i\n",
-                (int16_t)(1000*controller->ki)
-            );
-            break;
-        case 2:
-            snprintf(
-                line, LINE_BUF_SIZE,"KD: %i\n",
-                (int16_t)(1000*controller->kd)
-            );
-            break;
-        case 3:
-            snprintf(
-                line, LINE_BUF_SIZE,"KIE_LIM: %i\n",
-                (int16_t)(1000*controller->kie_limit)
-            );
-            break;
-        case 4:
-            snprintf(
-                line, LINE_BUF_SIZE,"KIE_SUM: %i\n",
-                (int16_t)(1000*controller->kie_sum)
-            );
-            break;
-        default:
-            break;
-    }
-    return line;
+    return format_strings[param_i];
 }

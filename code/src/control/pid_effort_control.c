@@ -106,52 +106,16 @@ void controller_set_param(
     }
 }
 
-#define LINE_BUF_SIZE 16
-char line[LINE_BUF_SIZE];
-
-char *controller_get_string(ControllerHandle controller_handle, size_t param_i)
+#define FORMAT_STRING_SIZE 16
+const char format_strings[][FORMAT_STRING_SIZE] = {
+    "KP: %i\n",
+    "KI: %i\n",
+    "KD: %i\n",
+    "KIE_LIM: %i\n",
+    "U_KP: %i\n",
+    "U_KI: %i\n"
+};
+const char *controller_get_format_string(size_t param_i)
 {
-    Controller *controller = controller_handle;
-    return 0;
-    switch (param_i) {
-        case 0:
-            snprintf(
-                line, LINE_BUF_SIZE,"KP: %i\n",
-                (int16_t)(1000*controller->kp)
-            );
-            break;
-        case 1:
-            snprintf(
-                line, LINE_BUF_SIZE,"KI: %i\n",
-                (int16_t)(1000*controller->ki)
-            );
-            break;
-        case 2:
-            snprintf(
-                line, LINE_BUF_SIZE,"KD: %i\n",
-                (int16_t)(1000*controller->kd)
-            );
-            break;
-        case 3:
-            snprintf(
-                line, LINE_BUF_SIZE,"KIE_LIM: %i\n",
-                (int16_t)(1000*controller->kie_limit)
-            );
-            break;
-        case 4:
-            snprintf(
-                line, LINE_BUF_SIZE,"U_KP: %i\n",
-                (int16_t)(1000*controller->u_kp)
-            );
-            break;
-        case 5:
-            snprintf(
-                line, LINE_BUF_SIZE,"U_KI: %i\n",
-                (int16_t)(1000*controller->u_ki)
-            );
-            break;
-        default:
-            break;
-    }
-    return line;
+    return format_strings[param_i];
 }
