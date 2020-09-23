@@ -1,9 +1,11 @@
 #include "buffer.h"
+#include "string.h"
 
 Buffer buffer_create(size_t N)
 {
     Buffer buffer;
-    buffer.data = calloc(0, N * sizeof(float));
+    buffer.data = malloc(N * sizeof(float));
+    memset(buffer.data, 0, N * sizeof(float));
     buffer.N = N;
     buffer.tail = 0;
     return buffer;

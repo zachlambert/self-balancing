@@ -12,25 +12,6 @@
 #include <math.h>
 #include <avr/interrupt.h>
 
-void robot_set_config(Robot *robot)
-{
-    robot->motor_right_pwm = PIN_TIMER1_A; //PB1
-    robot->motor_right_dir = PIN_PD6;
-    robot->motor_right_feedback = PIN_INT0; //PD2
-    robot->motor_left_pwm = PIN_TIMER1_B; //PB2
-    robot->motor_left_dir = PIN_PD5;
-    robot->motor_left_feedback = PIN_INT1; //PD3
-
-    robot->button_1_pin = PIN_PC1;
-    robot->button_2_pin = PIN_PC2;
-    robot->button_3_pin = PIN_PC3;
-    robot->led_pin = PIN_PD4;
-    robot->adc_pin = PIN_PC0;
-
-    robot->radio_csn_pin = PIN_PD7;
-    robot->radio_ce_pin = PIN_PB0;
-}
-
 void robot_init(Robot *robot)
 {
     motors_init(robot);
@@ -47,8 +28,8 @@ void robot_init(Robot *robot)
     mpu6050_init(&robot->mpu6050_config);
 
     robot->radio_config = radio_create_config();
-    robot->radio_config.CSN = robot->radio_csn_pin;
-    robot->radio_config.CE = robot->radio_ce_pin;
+    robot->radio_config.CSN = RADIO_CSN_PIN;
+    robot->radio_config.CE = RADIO_CE_PIN;
     robot->radio_config.IRQ = 0;
 
     robot->radio_config.rx_base_address = 0xA0000000;

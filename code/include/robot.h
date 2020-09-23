@@ -9,28 +9,28 @@
 #include "control.h"
 #include "buffer.h"
 
+// Used defines for pins to save on memory usage
+
+#define MOTOR_RIGHT_PWM PIN_TIMER1_A
+#define MOTOR_RIGHT_DIR PIN_PD6
+#define MOTOR_RIGHT_FEEDBACK PIN_INT0
+#define MOTOR_LEFT_PWM PIN_TIMER1_B
+#define MOTOR_LEFT_DIR PIN_PD5
+#define MOTOR_LEFT_FEEDBACK PIN_INT1
+
+#define BUTTON_1_PIN PIN_PC1
+#define BUTTON_2_PIN PIN_PC2
+#define BUTTON_3_PIN PIN_PC3
+#define LED_PIN PIN_PD4
+#define ADC_PIN PIN_PC0
+
+#define RADIO_CSN_PIN PIN_PD7
+#define RADIO_CE_PIN PIN_PB0
+
 typedef struct {
-    Pin motor_left_pwm;
-    Pin motor_left_dir;
-    Pin motor_left_feedback;
-    Pin motor_right_pwm;
-    Pin motor_right_dir;
-    Pin motor_right_feedback;
-
-    Pin adc_pin;
-    Pin button_1_pin;
-    Pin button_2_pin;
-    Pin button_3_pin;
-    Pin led_pin;
-
-    Pin radio_ce_pin;
-    Pin radio_csn_pin;
-
     OLEDConfig oled_config;
-
     MPU6050Config mpu6050_config;
     MPU6050Data mpu6050_data;
-
     RadioConfig radio_config;
 
     State state;
@@ -40,7 +40,6 @@ typedef struct {
     uint8_t active;
 } Robot;
 
-void robot_set_config(Robot *robot);
 void robot_init(Robot *robot);
 void robot_loop(Robot *robot);
 

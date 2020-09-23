@@ -7,28 +7,25 @@
 #include "zarduino/timing/delay.h"
 
 volatile uint8_t button_1_pressed;
-Pin button_1_pin;
 void button_1_callback(void)
 {
-    if (gpio_read(button_1_pin)) {
+    if (gpio_read(BUTTON_1_PIN)) {
         button_1_pressed = 1;
     }
 }
 
 volatile uint8_t button_2_pressed;
-Pin button_2_pin;
 void button_2_callback(void)
 {
-    if (gpio_read(button_2_pin)) {
+    if (gpio_read(BUTTON_2_PIN)) {
         button_2_pressed = 1;
     }
 }
 
 volatile uint8_t button_3_pressed;
-Pin button_3_pin;
 void button_3_callback(void)
 {
-    if (gpio_read(button_3_pin)) {
+    if (gpio_read(BUTTON_3_PIN)) {
         button_3_pressed = 1;
     }
 }
@@ -46,29 +43,25 @@ void interface_init(Robot *robot)
     adc_config.reference = ADC_REFERENCE_AVCC;
     adc_initialise(&adc_config);
 
-    button_1_pin = robot->button_1_pin;
-    button_2_pin = robot->button_2_pin;
-    button_3_pin = robot->button_3_pin;
-
-    gpio_mode_input_pullup(robot->button_1_pin);
-    gpio_mode_input_pullup(robot->button_2_pin);
-    gpio_mode_input_pullup(robot->button_3_pin);
-    gpio_mode_output(robot->led_pin);
-    gpio_write(robot->led_pin, 0);
+    gpio_mode_input_pullup(BUTTON_1_PIN);
+    gpio_mode_input_pullup(BUTTON_2_PIN);
+    gpio_mode_input_pullup(BUTTON_3_PIN);
+    gpio_mode_output(LED_PIN);
+    gpio_write(LED_PIN, 0);
 
     button_1_pressed = 0;
     button_2_pressed = 0;
 
     interrupt_pin_add_callback(
-        robot->button_1_pin,
+        BUTTON_1_PIN,
         button_1_callback 
     );
     interrupt_pin_add_callback(
-        robot->button_2_pin,
+        BUTTON_2_PIN,
         button_2_callback 
     );
     interrupt_pin_add_callback(
-        robot->button_3_pin,
+        BUTTON_3_PIN,
         button_3_callback 
     );
 }
@@ -104,14 +97,14 @@ void interface_update_params(Robot *robot)
         if (!edit_value) {
             edit_value = 1;
             start_value = controller_get_param(robot->controller_handle, param_i);
-            start_adc = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
+            start_adc = ((float)(adc_read_wait(ADC_PIN)>>2)) / 256.0;
         } else {
             edit_value = 0;
         }
     }
 
     if (edit_value) {
-        float adc_input = ((float)(adc_read_wait(robot->adc_pin)>>2)) / 256.0;
+        float adc_input = ((float)(adc_read_wait(ADC_PIN)>>2)) / 256.0;
         controller_set_param(
             robot->controller_handle, param_i,
             start_value + (adc_input - start_adc)*2
@@ -128,7 +121,7 @@ void interface_update(Robot *robot)
     if (button_3_pressed) {
         button_3_pressed = 0;
         robot->active = !robot->active;
-        gpio_write(robot->led_pin, robot->active);
+        gpio_write(LED_PIN, robot->active);
         robot->seconds = 0;
         if (robot->active) {
             oled_clear(&robot->oled_config);
