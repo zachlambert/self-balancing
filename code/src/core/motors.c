@@ -54,20 +54,20 @@ void motors_init(Robot *robot)
     buffer_left = buffer_create(BUFFER_N);
 }
 
-void motors_set_cmd_right(Robot *robot, float cmd_right)
+void motors_set_cmd_right(Robot *robot)
 {
     // Motor PWM is active low
-    if (cmd_right > 0) {
-        if (cmd_right > 1)
-            cmd_right = 1;
-        timer1_set_duty_cycle_b(1 - cmd_right);
+    if (robot->state.motor_cmd_right > 0) {
+        if (robot->state.motor_cmd_right > 1)
+            robot->state.motor_cmd_right = 1;
+        timer1_set_duty_cycle_b(1 - robot->state.motor_cmd_right);
         gpio_write(MOTOR_RIGHT_DIR, 0);
         psi_right_dir = 1;
 
-    } else if(cmd_right < 0) {
-        if (cmd_right < -1)
-            cmd_right = -1;
-        timer1_set_duty_cycle_b(1 + cmd_right);
+    } else if(robot->state.motor_cmd_right < 0) {
+        if (robot->state.motor_cmd_right < -1)
+            robot->state.motor_cmd_right = -1;
+        timer1_set_duty_cycle_b(1 + robot->state.motor_cmd_right);
         gpio_write(MOTOR_RIGHT_DIR, 1);
         psi_right_dir = -1;
 
@@ -76,20 +76,20 @@ void motors_set_cmd_right(Robot *robot, float cmd_right)
     }
 }
 
-void motors_set_cmd_left(Robot *robot, float cmd_left)
+void motors_set_cmd_left(Robot *robot)
 {
     // Motor PWM is active low
-    if (cmd_left > 0) {
-        if (cmd_left > 1)
-            cmd_left = 1;
-        timer1_set_duty_cycle_a(1 - cmd_left);
+    if (robot->state.motor_cmd_left > 0) {
+        if (robot->state.motor_cmd_left > 1)
+            robot->state.motor_cmd_left = 1;
+        timer1_set_duty_cycle_a(1 - robot->state.motor_cmd_left);
         gpio_write(MOTOR_LEFT_DIR, 1);
         psi_left_dir = 1;
 
-    } else if(cmd_left < 0) {
-        if (cmd_left < -1)
-            cmd_left = -1;
-        timer1_set_duty_cycle_a(1 + cmd_left);
+    } else if(robot->state.motor_cmd_left < 0) {
+        if (robot->state.motor_cmd_left < -1)
+            robot->state.motor_cmd_left = -1;
+        timer1_set_duty_cycle_a(1 + robot->state.motor_cmd_left);
         gpio_write(MOTOR_LEFT_DIR, 0);
         psi_left_dir = -1;
 

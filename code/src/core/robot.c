@@ -91,8 +91,8 @@ void robot_loop_sensors(Robot *robot, float dt)
 
 void robot_loop_actuate(Robot *robot)
 {
-    motors_set_cmd_right(robot, robot->state.motor_cmd_right);
-    motors_set_cmd_left(robot, robot->state.motor_cmd_left);
+    motors_set_cmd_right(robot);
+    motors_set_cmd_left(robot);
 }
 
 void robot_loop(Robot *robot)

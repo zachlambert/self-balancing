@@ -6,7 +6,7 @@
 s = serialport("/dev/ttyUSB0", 57600);
 flush(s);
 M = 8;
-N = 120*M;
+N = 400*M;
 data = read(s, N, "int32");
 % Should need to just divide by 10000, but for some reason the values
 % matlab gives back are 40000 times larger.
@@ -19,8 +19,8 @@ theta_dot = data(3:M:N);
 phi_dot = data(4:M:N);
 psi_1_dot = data(5:M:N);
 psi_2_dot = data(6:M:N);
-cmd_1_dot = data(7:M:N) * 10;
-cmd_2_dot = data(8:M:N) * 10;
+cmd_1_dot = data(7:M:N);
+cmd_2_dot = data(8:M:N);
 hold on;
 plot(t, theta);
 plot(t, theta_dot);
