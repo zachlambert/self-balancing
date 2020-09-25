@@ -21,9 +21,22 @@ add_executable(pid_oled.elf
     src/common/interface_param.c
     src/common/main.c
     src/common/motors.c
-    src/pid/robot.c
+    src/robot/pid_oled.c
 )
 target_include_directories(pid_oled.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
 target_link_libraries(pid_oled.elf ${ZARDUINO_LIB})
+
+add_executable(test_transient.elf
+    src/common/buffer.c
+    src/common/interface_common.c
+    src/common/interface_uart.c
+    src/common/main.c
+    src/common/motors.c
+    src/robot/test_transient.c
+)
+target_include_directories(test_transient.elf
+    PRIVATE include /usr/local/include /usr/lib/avr/include
+)
+target_link_libraries(test_transient.elf ${ZARDUINO_LIB})

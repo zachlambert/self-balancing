@@ -11,7 +11,7 @@ void interface_uart_init(void)
     uart_init(&uart_config);
 }
 
-void interface_send_state(RobotHandle robot_handle)
+void interface_uart_send_state(RobotHandle robot_handle)
 {
     RobotBase *robot = robot_handle;
     uart_write_int32(robot->seconds * 10000);
