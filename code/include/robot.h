@@ -1,24 +1,20 @@
 #ifndef ROBOT_H
 #define ROBOT_H
 
-#include "zarduino/module/oled.h"
 #include "zarduino/module/mpu6050.h"
-#include "zarduino/module/radio.h"
-
-#include "state.h"
-#include "control.h"
 
 typedef struct {
-    OLEDConfig oled_config;
     MPU6050Config mpu6050_config;
     MPU6050Data mpu6050_data;
-    RadioConfig radio_config;
-    State state;
-    ControllerHandle controller_handle;
+    float seconds, dt;
     uint8_t active;
-} Robot;
+    float motor_cmd_left, motor_cmd_right;
+    float psi_left_dot, psi_right_dot;
+} RobotBase;
 
-void robot_init(Robot *robot);
-void robot_loop(Robot *robot);
+typedef void *RobotHandle;
+
+void robot_init(RobotHandle robot_handle);
+void robot_loop(RobotHandle robot_handle);
 
 #endif

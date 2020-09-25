@@ -1,4 +1,4 @@
-#include "interface.h"
+#include "interface_param.h"
 
 #include "zarduino/module/oled.h"
 #include "zarduino/core/adc.h"
@@ -27,15 +27,7 @@ void button_2_callback(void)
     }
 }
 
-volatile uint8_t button_3_pressed = 0;
-void button_3_callback(void)
-{
-    if (gpio_read(BUTTON_3_PIN)) {
-        button_3_pressed = 1;
-    }
-}
-
-void interface_init(Robot *robot)
+void interface_init(RobotHandle robot_handle)
 {
     UartConfig uart_config = uart_create_config();
     uart_config.baud_rate = 57600;
