@@ -2,8 +2,15 @@
 #define INTERFACE_PARAM_H
 
 #include "robot.h"
+#include "zarduino/module/oled.h"
+#include <stdlib.h>
 
-void interface_param_init(RobotHandle robot_handle);
-void interface_param_update(RobotHandle robot_handle);
+void interface_param_init(OLEDConfig *oled_config);
+void interface_param_update(
+    OLEDConfig *oled_config,
+    float *param_values,
+    const char **param_names,
+    size_t param_count
+);
 
 #endif

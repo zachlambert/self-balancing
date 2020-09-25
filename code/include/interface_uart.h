@@ -3,7 +3,7 @@
 
 #include "robot.h"
 
-void interface_uart_init(RobotHandle robot_handle);
+void interface_uart_init(void);
 void interface_uart_update(RobotHandle robot_handle);
 
 #endif

@@ -8,12 +8,14 @@ typedef struct {
     MPU6050Data mpu6050_data;
     float seconds, dt;
     uint8_t active;
-    float motor_cmd_left, motor_cmd_right;
+    float theta, theta_dot, phi_dot;
     float psi_left_dot, psi_right_dot;
+    float motor_cmd_left, motor_cmd_right;
 } RobotBase;
 
 typedef void *RobotHandle;
 
+RobotHandle robot_create(void);
 void robot_init(RobotHandle robot_handle);
 void robot_loop(RobotHandle robot_handle);
 

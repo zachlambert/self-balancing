@@ -13,7 +13,7 @@ void button_3_callback(void)
     }
 }
 
-void interface_init(void)
+void interface_common_init(void)
 {
     gpio_mode_input_pullup(BUTTON_3_PIN);
     gpio_mode_output(LED_PIN);
@@ -25,7 +25,7 @@ void interface_init(void)
     );
 }
 
-void interface_update(RobotHandle robot_handle)
+void interface_common_update(RobotHandle robot_handle)
 {
     RobotBase *robot = robot_handle;
 
