@@ -1,4 +1,4 @@
-lambda2 = 5;
+lambda2 = 0.0389^2;
 omega2 = 4;
 A = [
     0 1 0 0

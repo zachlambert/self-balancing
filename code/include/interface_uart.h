@@ -1,5 +1,5 @@
-#ifndef INTERFACE_PARAM_H
-#define INTERFACE_PARAM_H
+#ifndef INTERFACE_UART_H
+#define INTERFACE_UART_H
 
 #include "robot.h"
 

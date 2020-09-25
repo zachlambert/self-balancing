@@ -1,5 +1,5 @@
-#ifndef INTERFACE_H
-#define INTERFACE_H
+#ifndef INTERFACE_COMMON_H
+#define INTERFACE_COMMON_H
 
 #include "robot.h"
 

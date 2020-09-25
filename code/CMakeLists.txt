@@ -44,6 +44,7 @@ target_link_libraries(test_transient.elf ${ZARDUINO_LIB})
 add_executable(test_oscillatory.elf
     src/common/buffer.c
     src/common/interface_common.c
+    src/common/interface_param.c
     src/common/interface_uart.c
     src/common/main.c
     src/common/motors.c

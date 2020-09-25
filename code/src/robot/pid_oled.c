@@ -68,10 +68,16 @@ void robot_loop(RobotHandle robot_handle)
             robot->params[U_KP] * robot->u_e +
             robot->u_kie_sum;
 
-        robot->base.motor_cmd_right += 0.5 * (robot->eff_prev + robot->eff) * robot->base.dt;
+        robot->base.motor_cmd_right +=
+            0.5 * (robot->eff_prev + robot->eff) * robot->base.dt;
         robot->base.motor_cmd_left = robot->base.motor_cmd_right;
 
     } else {
-        interface_param_update(&robot->oled_config, robot->params, param_names, PARAM_COUNT);
+        interface_param_update(
+            &robot->oled_config,
+            robot->params,
+            param_names,
+            PARAM_COUNT
+        );
     }
 }
