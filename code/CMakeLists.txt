@@ -40,3 +40,16 @@ target_include_directories(test_transient.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
 target_link_libraries(test_transient.elf ${ZARDUINO_LIB})
+
+add_executable(test_oscillatory.elf
+    src/common/buffer.c
+    src/common/interface_common.c
+    src/common/interface_uart.c
+    src/common/main.c
+    src/common/motors.c
+    src/robot/test_oscillatory.c
+)
+target_include_directories(test_oscillatory.elf
+    PRIVATE include /usr/local/include /usr/lib/avr/include
+)
+target_link_libraries(test_oscillatory.elf ${ZARDUINO_LIB})

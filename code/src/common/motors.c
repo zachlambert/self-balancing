@@ -60,14 +60,14 @@ void motors_set_cmd_right(RobotHandle robot_handle)
         if (robot->motor_cmd_right > 1)
             robot->motor_cmd_right = 1;
         timer1_set_duty_cycle_b(1 - robot->motor_cmd_right);
-        gpio_write(MOTOR_RIGHT_DIR, 0);
+        gpio_write(MOTOR_RIGHT_DIR, 1);
         psi_right_dir = 1;
 
     } else if(robot->motor_cmd_right < 0) {
         if (robot->motor_cmd_right < -1)
             robot->motor_cmd_right = -1;
         timer1_set_duty_cycle_b(1 + robot->motor_cmd_right);
-        gpio_write(MOTOR_RIGHT_DIR, 1);
+        gpio_write(MOTOR_RIGHT_DIR, 0);
         psi_right_dir = -1;
 
     } else {
@@ -83,14 +83,14 @@ void motors_set_cmd_left(RobotHandle robot_handle)
         if (robot->motor_cmd_left > 1)
             robot->motor_cmd_left = 1;
         timer1_set_duty_cycle_a(1 - robot->motor_cmd_left);
-        gpio_write(MOTOR_LEFT_DIR, 1);
+        gpio_write(MOTOR_LEFT_DIR, 0);
         psi_left_dir = 1;
 
     } else if(robot->motor_cmd_left < 0) {
         if (robot->motor_cmd_left < -1)
             robot->motor_cmd_left = -1;
         timer1_set_duty_cycle_a(1 + robot->motor_cmd_left);
-        gpio_write(MOTOR_LEFT_DIR, 0);
+        gpio_write(MOTOR_LEFT_DIR, 1);
         psi_left_dir = -1;
 
     } else {
