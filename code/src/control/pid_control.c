@@ -84,15 +84,10 @@ void controller_set_param(
     }
 }
 
-
-#define FORMAT_STRING_SIZE 16
-const char format_strings[][FORMAT_STRING_SIZE] = {
-    "KP: %i\n",
-    "KI: %i\n",
-    "KD: %i\n",
-    "KIE_LIM: %i\n",
+const char format_strings[4][8] = {
+    "KP", "KI", "KD", "KIE_LIM"
 };
-const char *controller_get_format_string(size_t param_i)
+const char *controller_get_param_name(size_t param_i)
 {
     return format_strings[param_i];
 }

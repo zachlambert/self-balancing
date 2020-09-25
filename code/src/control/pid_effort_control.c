@@ -15,7 +15,17 @@ const size_t CONTROLLER_PARAM_COUNT = 6;
 ControllerHandle controller_init(void)
 {
     Controller *controller = malloc(sizeof(Controller));
-    memset(controller, 0, sizeof(Controller));
+    controller->kp = 0;
+    controller->kd = 0;
+    controller->kie_limit = 0;
+    controller->e = 0;
+    controller->kie_sum = 0;
+    controller->u_kp = 0;
+    controller->u_ki = 0;
+    controller->u_kie_sum = 0;
+    controller->u_e = 0;
+
+    controller->ki = 0;
     return controller;
 }
 
@@ -106,16 +116,10 @@ void controller_set_param(
     }
 }
 
-#define FORMAT_STRING_SIZE 16
-const char format_strings[][FORMAT_STRING_SIZE] = {
-    "KP: %i\n",
-    "KI: %i\n",
-    "KD: %i\n",
-    "KIE_LIM: %i\n",
-    "U_KP: %i\n",
-    "U_KI: %i\n"
+const char format_strings[6][8] = {
+    "KP", "KI", "KD", "KIE_LIM", "U_KP", "U_KI"
 };
-const char *controller_get_format_string(size_t param_i)
+const char *controller_get_param_name(size_t param_i)
 {
     return format_strings[param_i];
 }

@@ -9,6 +9,8 @@
 
 #define INTERFACE_LINE_SIZE 16
 
+float param_value = 0;
+
 volatile uint8_t button_1_pressed = 0;
 void button_1_callback(void)
 {
@@ -41,7 +43,6 @@ void interface_init(Robot *robot)
 
     robot->oled_config = oled_create_config();
     oled_init(&robot->oled_config);
-    oled_print_string(&robot->oled_config, "STARTED\n");
 
     ADCConfig adc_config = adc_create_config();
     adc_config.reference = ADC_REFERENCE_AVCC;
@@ -65,6 +66,8 @@ void interface_init(Robot *robot)
         BUTTON_3_PIN,
         button_3_callback
     );
+
+    param_value = controller_get_param(&robot->state, 0);
 }
 
 void interface_send_state(State *state)
@@ -90,6 +93,7 @@ void interface_update_params(Robot *robot)
         button_1_pressed = 0;
         edit_value = 0;
         param_i = (param_i + 1) % CONTROLLER_PARAM_COUNT;
+        param_value = controller_get_param(robot->controller_handle, param_i);
     }
 
     if (button_2_pressed) {
@@ -97,33 +101,34 @@ void interface_update_params(Robot *robot)
 
         if (!edit_value) {
             edit_value = 1;
-            start_value = controller_get_param(robot->controller_handle, param_i);
+            start_value = param_value;
             start_adc = ((float)(adc_read_wait(ADC_PIN)>>2)) / 256.0;
         } else {
             edit_value = 0;
         }
     }
 
-
     if (edit_value) {
-        char line[INTERFACE_LINE_SIZE];
         float adc_input = ((float)(adc_read_wait(ADC_PIN)>>2)) / 256.0;
-        float value = start_value + (adc_input - start_adc)*2;
+        param_value = start_value + (adc_input - start_adc)*2;
+        controller_set_param(robot->controller_handle, param_i, param_value);
 
-        controller_set_param(robot->controller_handle, param_i, value);
-        snprintf(
-            line,
-            INTERFACE_LINE_SIZE,
-            "PARAM: %f\n",
-            value
-        );
-
-        oled_clear(&robot->oled_config);
-        oled_print_string(
-            &robot->oled_config,
-            line
-        );
     }
+
+    static char line[INTERFACE_LINE_SIZE];
+    snprintf(
+        line,
+        INTERFACE_LINE_SIZE,
+        "%s: %d\n",
+        controller_get_param_name(param_i),
+        (int16_t)(param_value*1000)
+    );
+
+    oled_clear(&robot->oled_config);
+    oled_print_string(
+        &robot->oled_config,
+        line
+    );
 }
 
 void interface_update(Robot *robot)

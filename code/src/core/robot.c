@@ -41,6 +41,8 @@ void robot_init(Robot *robot)
     timer0_init_as_timer_accurate();
 
     robot->controller_handle = controller_init();
+    robot->state.motor_cmd_left = 0;
+    robot->state.motor_cmd_right = 0;
 
     interface_init(robot);
 }
