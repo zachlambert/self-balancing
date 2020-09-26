@@ -5,6 +5,7 @@
 #include "zarduino/timing/delay.h"
 #include "config.h"
 #include <stdio.h>
+#include <math.h>
 
 #define INTERFACE_LINE_SIZE 16
 
@@ -27,7 +28,7 @@ void button_2_callback(void)
     }
 }
 
-void interface_param_init(OLEDConfig *oled_config)
+void interface_param_init(OLEDConfig *oled_config, float initial_param)
 {
     oled_init(oled_config);
 
@@ -46,13 +47,16 @@ void interface_param_init(OLEDConfig *oled_config)
         BUTTON_2_PIN,
         button_2_callback
     );
+
+    param_value = initial_param;
 }
 
 void interface_param_update(
     OLEDConfig *oled_config,
     float *param_values,
     const char **param_names,
-    size_t param_count)
+    size_t param_count,
+    float adc_scale)
 {
     static float start_value = 0;
     static float start_adc = 0;
@@ -80,7 +84,7 @@ void interface_param_update(
 
     if (edit_value) {
         float adc_input = ((float)(adc_read_wait(ADC_PIN)>>2)) / 256.0;
-        param_value = start_value + (adc_input - start_adc)*2;
+        param_value = start_value + (adc_input - start_adc)*adc_scale;
         param_values[param_i] = param_value;
 
     }
@@ -89,9 +93,10 @@ void interface_param_update(
     snprintf(
         line,
         INTERFACE_LINE_SIZE,
-        "%s: %d\n",
+        "%s: %d.%d\n",
         param_names[param_i],
-        (int16_t)(param_value*1000)
+        (int16_t)(floorf(param_value)),
+        (int16_t)(floorf((param_value-floorf(param_value)) * 1000))
     );
 
     oled_clear(oled_config);

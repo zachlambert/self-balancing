@@ -17,5 +17,10 @@ P = [B, A*B, A^2*B, A^3*B];
 rP = rank(P);
 disp("Rank of controllability matrix:");
 disp(rP);
-disp("Column space:");
-disp(P);
+if rP ~= 4
+    disp("Not fully controllable");
+    disp("Uncontrollable states:");
+    disp(null(transpose(P)));
+else
+    disp("Fully controllable");
+end

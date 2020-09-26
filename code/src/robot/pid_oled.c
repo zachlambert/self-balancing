@@ -32,7 +32,7 @@ void robot_init(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
     robot->oled_config = oled_create_config();
-    interface_param_init(&robot->oled_config);
+    interface_param_init(&robot->oled_config, 0);
 }
 
 const char *param_names[6] = {
@@ -77,7 +77,8 @@ void robot_loop(RobotHandle robot_handle)
             &robot->oled_config,
             robot->params,
             param_names,
-            PARAM_COUNT
+            PARAM_COUNT,
+            2
         );
     }
 }

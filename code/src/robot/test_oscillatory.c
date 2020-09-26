@@ -18,7 +18,7 @@ RobotHandle robot_create(void)
 {
     Robot *robot = malloc(sizeof(Robot));
     memset(robot, 0, sizeof(*robot));
-    robot->params[0] = 200;
+    robot->params[0] = 50;
     return robot;
 }
 
@@ -27,7 +27,7 @@ void robot_init(RobotHandle robot_handle)
     Robot *robot = robot_handle;
     interface_uart_init();
     robot->oled_config = oled_create_config();
-    interface_param_init(&robot->oled_config);
+    interface_param_init(&robot->oled_config, robot->params[0]);
 }
 
 const char *param_names[1] = {
@@ -47,7 +47,8 @@ void robot_loop(RobotHandle robot_handle)
             &robot->oled_config,
             robot->params,
             param_names,
-            PARAM_COUNT
+            PARAM_COUNT,
+            50
         );
     }
 }
