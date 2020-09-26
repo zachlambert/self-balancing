@@ -26,6 +26,7 @@ typedef void *RobotHandle;
 
 RobotHandle robot_create(void);
 void robot_init(RobotHandle robot_handle);
-void robot_loop(RobotHandle robot_handle);
+void robot_loop_active(RobotHandle robot_handle);
+void robot_loop_inactive(RobotHandle robot_handle);
 
 #endif

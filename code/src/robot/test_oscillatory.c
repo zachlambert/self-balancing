@@ -34,21 +34,22 @@ const char *param_names[1] = {
     "K"
 };
 
-void robot_loop(RobotHandle robot_handle)
+void robot_loop_active(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
-    if (robot->base.active) {
-        robot->base.motor_cmd_left +=
-            robot->params[K] * robot->base.theta * robot->base.dt;
-        robot->base.motor_cmd_right = robot->base.motor_cmd_left;
-        interface_uart_send_state(robot_handle);
-    } else {
-        interface_param_update(
-            &robot->oled_config,
-            robot->params,
-            param_names,
-            PARAM_COUNT,
-            50
-        );
-    }
+    robot->base.u[U_1] = robot->params[K] * robot->base.y[Y_THETA] * robot->base.dt;
+    robot->base.u[U_2] = robot->params[K] * robot->base.y[Y_THETA] * robot->base.dt;
+    interface_uart_send_state(robot_handle);
+}
+
+void robot_loop_inactive(RobotHandle robot_handle)
+{
+    Robot *robot = robot_handle;
+    interface_param_update(
+        &robot->oled_config,
+        robot->params,
+        param_names,
+        PARAM_COUNT,
+        50
+    );
 }

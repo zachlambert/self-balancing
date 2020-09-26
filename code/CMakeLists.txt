@@ -15,18 +15,18 @@ find_library(ZARDUINO_LIB
     PATHS /usr/local/lib
 )
 
-add_executable(pid_oled.elf
+add_executable(controller_1.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/interface_param.c
     src/common/main.c
     src/common/motors.c
-    src/robot/pid_oled.c
+    src/robot/controller_1.c
 )
-target_include_directories(pid_oled.elf
+target_include_directories(controller_1.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(pid_oled.elf ${ZARDUINO_LIB})
+target_link_libraries(controller_1.elf ${ZARDUINO_LIB})
 
 add_executable(test_transient.elf
     src/common/buffer.c

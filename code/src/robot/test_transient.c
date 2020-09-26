@@ -15,9 +15,12 @@ void robot_init(RobotHandle robot_handle)
     interface_uart_init();
 }
 
-void robot_loop(RobotHandle robot_handle)
+void robot_loop_active(RobotHandle robot_handle)
 {
-    if (((RobotBase*)robot_handle)->active) {
-        interface_uart_send_state(robot_handle);
-    }
+    interface_uart_send_state(robot_handle);
+}
+
+void robot_loop_inactive(RobotHandle robot_handle)
+{
+    // Do nothing
 }

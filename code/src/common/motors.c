@@ -52,51 +52,49 @@ void motors_init(void)
     buffer_left = buffer_create(BUFFER_N);
 }
 
-float motors_set_pwm_1(float signed_pwm)
+void motors_set_pwm_1(float *signed_pwm)
 {
-    if (signed_pwm > 0) {
-        if (signed_pwm > 1)
-            signed_pwm = 1;
-        timer1_set_duty_cycle_b(1 - signed_pwm);
+    if (*signed_pwm > 0) {
+        if (*signed_pwm > 1)
+            *signed_pwm = 1;
+        timer1_set_duty_cycle_b(1 - *signed_pwm);
         gpio_write(MOTOR_RIGHT_DIR, 1);
         psi_right_dir = 1;
 
-    } else if(signed_pwm < 0) {
-        if (signed_pwm < -1)
-            signed_pwm = -1;
-        timer1_set_duty_cycle_b(1 + signed_pwm);
+    } else if(*signed_pwm < 0) {
+        if (*signed_pwm < -1)
+            *signed_pwm = -1;
+        timer1_set_duty_cycle_b(1 + *signed_pwm);
         gpio_write(MOTOR_RIGHT_DIR, 0);
         psi_right_dir = -1;
 
     } else {
         timer1_set_duty_cycle_b(0.999);
     }
-    return signed_pwm;
 }
 
-float motors_set_pwm_2(float signed_pwm)
+void motors_set_pwm_2(float *signed_pwm)
 {
-    if (signed_pwm > 0) {
-        if (signed_pwm > 1)
-            signed_pwm = 1;
-        timer1_set_duty_cycle_a(1 - signed_pwm);
+    if (*signed_pwm > 0) {
+        if (*signed_pwm > 1)
+            *signed_pwm = 1;
+        timer1_set_duty_cycle_a(1 - *signed_pwm);
         gpio_write(MOTOR_LEFT_DIR, 0);
         psi_left_dir = 1;
 
-    } else if(signed_pwm < 0) {
-        if (signed_pwm < -1)
-            signed_pwm = -1;
-        timer1_set_duty_cycle_a(1 + signed_pwm);
+    } else if(*signed_pwm < 0) {
+        if (*signed_pwm < -1)
+            *signed_pwm = -1;
+        timer1_set_duty_cycle_a(1 + *signed_pwm);
         gpio_write(MOTOR_LEFT_DIR, 1);
         psi_left_dir = -1;
 
     } else {
         timer1_set_duty_cycle_a(0.999);
     }
-    return signed_pwm;
 }
 
-void motors_get_feedback(float *psi_1_dot, float *psi_2_dot)
+void motors_get_feedback(float *psi_1_dot, float *psi_2_dot, float dt)
 {
     // Each motor cycle outputs 6 pulses -> 12 interrupts
     // Gear reduction of 45:1
@@ -111,8 +109,8 @@ void motors_get_feedback(float *psi_1_dot, float *psi_2_dot)
     // measured values, so multiply by 1.25
     // rad/s ~= count / (dt*68.755)
 
-    buffer_set(&buffer_right, (float)psi_right_count / (robot->dt*68.755));
-    buffer_set(&buffer_left, (float)psi_left_count / (robot->dt*68.755));
+    buffer_set(&buffer_right, (float)psi_right_count / (dt*68.755));
+    buffer_set(&buffer_left, (float)psi_left_count / (dt*68.755));
     psi_right_count = 0;
     psi_left_count = 0;
 

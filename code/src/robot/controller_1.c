@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "constants.h"
 #include "interface_param.h"
 #include "zarduino/module/oled.h"
 #include <stdlib.h>
@@ -10,9 +11,7 @@ typedef struct {
     RobotBase base;
     OLEDConfig oled_config;
     float params[PARAM_COUNT];
-    float e, e_prev, e_deriv, kie_sum;
-    float eff, eff_prev;
-    float u_e, u_e_prev, u_kie_sum;
+    float x[4];
 } Robot;
 
 RobotHandle robot_create(void)
@@ -26,53 +25,48 @@ void robot_init(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
     robot->oled_config = oled_create_config();
-    interface_param_init(&robot->oled_config, 0);
+
+    robot->params[0] = -50;
+    robot->params[1] = -20;
+    robot->params[2] = -10;
+    robot->params[3] = 2;
+    robot->params[4] = -50;
+    robot->params[5] = -20;
+    robot->params[6] = -10;
+    robot->params[7] = 2;
+
+    interface_param_init(&robot->oled_config, -50);
 }
 
 const char *param_names[PARAM_COUNT] = {
     "K11", "K12", "K13", "K14", "K21", "K22", "K23", "K24"
 };
 
-void robot_loop(RobotHandle robot_handle)
+void robot_loop_active(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
 
-    if (robot->base.active) {
-        robot->e_prev = robot->e;
-        robot->e = 0 - robot->base.theta;
-        robot->e_deriv = -robot->base.theta_dot;
+    robot->x[0] = robot->base.y[0];
+    robot->x[1] = robot->base.y[1];
+    robot->x[2] = 0.5*R*ETA_1*robot->base.y[2] + 0.5*R*ETA_2*robot->base.y[3];
+    robot->x[3] = 0.5*R*ETA_1*robot->base.y[2]/D - 0.5*R*ETA_2*robot->base.y[3]/D;
 
-        robot->kie_sum +=
-            robot->params[KI] * 0.5 * (robot->e_prev + robot->e) * robot->base.dt;
-        if (robot->kie_sum > robot->params[KIE_LIM])
-            robot->kie_sum = robot->params[KIE_LIM];
-        else if (robot->kie_sum < -robot->params[KIE_LIM])
-            robot->kie_sum = -robot->params[KIE_LIM];
-
-        robot->u_e_prev = robot->u_e;
-        robot->u_e = 0 - robot->base.psi_left_dot;
-        robot->u_kie_sum +=
-            robot->params[U_KI] * 0.5 * (robot->u_e_prev + robot->u_e) * robot->base.dt;
-
-        robot->eff_prev = robot->eff;
-        robot->eff =
-            robot->params[KP] * robot->e +
-            robot->kie_sum +
-            robot->params[KD] * robot->e_deriv +
-            robot->params[U_KP] * robot->u_e +
-            robot->u_kie_sum;
-
-        robot->base.motor_cmd_right +=
-            0.5 * (robot->eff_prev + robot->eff) * robot->base.dt;
-        robot->base.motor_cmd_left = robot->base.motor_cmd_right;
-
-    } else {
-        interface_param_update(
-            &robot->oled_config,
-            robot->params,
-            param_names,
-            PARAM_COUNT,
-            2
-        );
+    robot->base.u[U_1] = 0;
+    robot->base.u[U_2] = 0;
+    for (size_t i = 0; i < 4; i++) {
+        robot->base.u[U_1] += robot->params[i] * robot->x[i];
+        robot->base.u[U_2] += robot->params[4+i] * robot->x[i];
     }
+}
+
+void robot_loop_inactive(RobotHandle robot_handle)
+{
+    Robot *robot = robot_handle;
+    interface_param_update(
+        &robot->oled_config,
+        robot->params,
+        param_names,
+        PARAM_COUNT,
+        2
+    );
 }

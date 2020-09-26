@@ -15,11 +15,13 @@ void interface_uart_send_state(RobotHandle robot_handle)
 {
     RobotBase *robot = robot_handle;
     uart_write_int32(robot->seconds * 10000);
-    uart_write_int32(robot->theta * 10000);
-    uart_write_int32(robot->theta_dot * 10000);
-    uart_write_int32(robot->phi_dot * 10000);
-    uart_write_int32(robot->psi_right_dot * 10000);
-    uart_write_int32(robot->psi_left_dot * 10000);
-    uart_write_int32(robot->motor_cmd_right * 10000);
-    uart_write_int32(robot->motor_cmd_left * 10000);
+    for (size_t i = 0; i < 2; i++) {
+        uart_write_int32(robot->pwm[i] * 10000);
+    };
+    for (size_t i = 0; i < 2; i++) {
+        uart_write_int32(robot->u[i] * 10000);
+    };
+    for (size_t i = 0; i < 4; i++) {
+        uart_write_int32(robot->y[i] * 10000);
+    }
 }

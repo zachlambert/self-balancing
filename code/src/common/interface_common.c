@@ -35,8 +35,8 @@ void interface_common_update(RobotHandle robot_handle)
         gpio_write(LED_PIN, robot->active);
         robot->seconds = 0;
         if (!robot->active) {
-            robot->motor_cmd_right = 0;
-            robot->motor_cmd_left = 0;
+            robot->pwm[PWM_1] = 0;
+            robot->pwm[PWM_2] = 0;
         }
     }
 }
