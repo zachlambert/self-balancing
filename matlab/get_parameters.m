@@ -9,5 +9,5 @@ function [lambda2, omega2, eta1, eta2, R, D] = get_parameters()
     D = 116e-3 / 2;
     % Measure from test_oscillatory, by making k large and measuring the
     % frequency of oscillation, then omega2 ~= (omega2_measured/K)
-    omega2 = 0.1;
+    omega2 = 0.1/15;
 end

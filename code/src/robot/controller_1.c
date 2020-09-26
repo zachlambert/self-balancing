@@ -26,16 +26,16 @@ void robot_init(RobotHandle robot_handle)
     Robot *robot = robot_handle;
     robot->oled_config = oled_create_config();
 
-    robot->params[0] = -50;
-    robot->params[1] = -20;
-    robot->params[2] = -10;
+    robot->params[0] = -25;
+    robot->params[1] = -7;
+    robot->params[2] = -4;
     robot->params[3] = 2;
-    robot->params[4] = -50;
-    robot->params[5] = -20;
-    robot->params[6] = -10;
+    robot->params[4] = -25;
+    robot->params[5] = -7;
+    robot->params[6] = -4;
     robot->params[7] = 2;
 
-    interface_param_init(&robot->oled_config, -50);
+    interface_param_init(&robot->oled_config, robot->params[0]);
 }
 
 const char *param_names[PARAM_COUNT] = {
@@ -54,8 +54,8 @@ void robot_loop_active(RobotHandle robot_handle)
     robot->base.u[U_1] = 0;
     robot->base.u[U_2] = 0;
     for (size_t i = 0; i < 4; i++) {
-        robot->base.u[U_1] += robot->params[i] * robot->x[i];
-        robot->base.u[U_2] += robot->params[4+i] * robot->x[i];
+        robot->base.u[U_1] -= robot->params[i] * robot->x[i];
+        robot->base.u[U_2] -= robot->params[4+i] * robot->x[i];
     }
 }
 
@@ -67,6 +67,6 @@ void robot_loop_inactive(RobotHandle robot_handle)
         robot->params,
         param_names,
         PARAM_COUNT,
-        2
+        5
     );
 }
