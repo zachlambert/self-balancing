@@ -42,13 +42,15 @@ inline void read_sensors(RobotHandle robot_handle)
     motors_get_feedback(robot_handle);
     mpu6050_read_data(&robot->mpu6050_config, &robot->mpu6050_data);
 
-    robot->theta = atan2(
+    robot->y[Y_THETA] = atan2(
         -robot->mpu6050_data.accel[0], robot->mpu6050_data.accel[2]
     );
-    robot->theta_dot = robot->mpu6050_data.gyro[1] * 0.01745;
-    robot->phi_dot =
-        cos(robot->theta) * robot->mpu6050_data.gyro[2] * 0.01745
-        - sin(robot->theta) * robot->mpu6050_data.gyro[0] * 0.01745;
+    robot->y[Y_THETA_DOT] = robot->mpu6050_data.gyro[1] * 0.01745;
+
+    // Don't use phi_dot
+    // robot->phi_dot =
+    //     cos(robot->theta) * robot->mpu6050_data.gyro[2] * 0.01745
+    //     - sin(robot->theta) * robot->mpu6050_data.gyro[0] * 0.01745;
 }
 
 inline void write_motors(RobotHandle robot_handle)

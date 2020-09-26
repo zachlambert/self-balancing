@@ -4,13 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PARAM_COUNT 6
-#define KP 0
-#define KI 1
-#define KD 2
-#define KIE_LIM 3
-#define U_KP 4
-#define U_KI 5
+#define PARAM_COUNT 8
 
 typedef struct {
     RobotBase base;
@@ -35,8 +29,8 @@ void robot_init(RobotHandle robot_handle)
     interface_param_init(&robot->oled_config, 0);
 }
 
-const char *param_names[6] = {
-    "KP", "KI", "KD", "KIE_LIM", "U_KP", "U_KI"
+const char *param_names[PARAM_COUNT] = {
+    "K11", "K12", "K13", "K14", "K21", "K22", "K23", "K24"
 };
 
 void robot_loop(RobotHandle robot_handle)

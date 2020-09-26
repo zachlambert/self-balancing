@@ -4,8 +4,8 @@
 #include "robot.h"
 
 void motors_init(void);
-void motors_set_cmd_right(RobotHandle robot_handle);
-void motors_set_cmd_left(RobotHandle robot_handle);
-void motors_get_feedback(RobotHandle robot_handle);
+float motors_set_pwm_1(float signed_pwm);
+float motors_set_pwm_2(float signed_pwm);
+void motors_get_feedback(float *psi_1_dot, float *psi_2_dot);
 
 #endif

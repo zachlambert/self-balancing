@@ -52,55 +52,52 @@ void motors_init(void)
     buffer_left = buffer_create(BUFFER_N);
 }
 
-void motors_set_cmd_right(RobotHandle robot_handle)
+float motors_set_pwm_1(float signed_pwm)
 {
-    RobotBase *robot = robot_handle;
-    // Motor PWM is active low
-    if (robot->motor_cmd_right > 0) {
-        if (robot->motor_cmd_right > 1)
-            robot->motor_cmd_right = 1;
-        timer1_set_duty_cycle_b(1 - robot->motor_cmd_right);
+    if (signed_pwm > 0) {
+        if (signed_pwm > 1)
+            signed_pwm = 1;
+        timer1_set_duty_cycle_b(1 - signed_pwm);
         gpio_write(MOTOR_RIGHT_DIR, 1);
         psi_right_dir = 1;
 
-    } else if(robot->motor_cmd_right < 0) {
-        if (robot->motor_cmd_right < -1)
-            robot->motor_cmd_right = -1;
-        timer1_set_duty_cycle_b(1 + robot->motor_cmd_right);
+    } else if(signed_pwm < 0) {
+        if (signed_pwm < -1)
+            signed_pwm = -1;
+        timer1_set_duty_cycle_b(1 + signed_pwm);
         gpio_write(MOTOR_RIGHT_DIR, 0);
         psi_right_dir = -1;
 
     } else {
         timer1_set_duty_cycle_b(0.999);
     }
+    return signed_pwm;
 }
 
-void motors_set_cmd_left(RobotHandle robot_handle)
+float motors_set_pwm_2(float signed_pwm)
 {
-    RobotBase *robot = robot_handle;
-    // Motor PWM is active low
-    if (robot->motor_cmd_left > 0) {
-        if (robot->motor_cmd_left > 1)
-            robot->motor_cmd_left = 1;
-        timer1_set_duty_cycle_a(1 - robot->motor_cmd_left);
+    if (signed_pwm > 0) {
+        if (signed_pwm > 1)
+            signed_pwm = 1;
+        timer1_set_duty_cycle_a(1 - signed_pwm);
         gpio_write(MOTOR_LEFT_DIR, 0);
         psi_left_dir = 1;
 
-    } else if(robot->motor_cmd_left < 0) {
-        if (robot->motor_cmd_left < -1)
-            robot->motor_cmd_left = -1;
-        timer1_set_duty_cycle_a(1 + robot->motor_cmd_left);
+    } else if(signed_pwm < 0) {
+        if (signed_pwm < -1)
+            signed_pwm = -1;
+        timer1_set_duty_cycle_a(1 + signed_pwm);
         gpio_write(MOTOR_LEFT_DIR, 1);
         psi_left_dir = -1;
 
     } else {
         timer1_set_duty_cycle_a(0.999);
     }
+    return signed_pwm;
 }
 
-void motors_get_feedback(RobotHandle robot_handle)
+void motors_get_feedback(float *psi_1_dot, float *psi_2_dot)
 {
-    RobotBase *robot = robot_handle;
     // Each motor cycle outputs 6 pulses -> 12 interrupts
     // Gear reduction of 45:1
     // Therefore, 45*12 = 540 interrupts per revolution
@@ -119,10 +116,10 @@ void motors_get_feedback(RobotHandle robot_handle)
     psi_right_count = 0;
     psi_left_count = 0;
 
-    robot->psi_right_dot = buffer_convolve_window(
+    *psi_1_dot = buffer_convolve_window(
         &buffer_right, AVERAGE_WINDOW
     );
-    robot->psi_left_dot = buffer_convolve_window(
+    *psi_2_dot = buffer_convolve_window(
         &buffer_left, AVERAGE_WINDOW
     );
 }
