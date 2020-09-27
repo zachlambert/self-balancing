@@ -37,6 +37,8 @@ void interface_common_update(RobotHandle robot_handle)
         if (!robot->active) {
             robot->pwm[PWM_1] = 0;
             robot->pwm[PWM_2] = 0;
+        } else {
+            mpu6050_calibrate(&robot->mpu6050_config);
         }
     }
 }

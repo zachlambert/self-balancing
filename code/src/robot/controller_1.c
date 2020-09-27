@@ -30,9 +30,9 @@ void robot_init(RobotHandle robot_handle)
     Robot *robot = robot_handle;
     robot->oled_config = oled_create_config();
 
-    robot->params[A1] = -200;
-    robot->params[A2] = -100;
-    robot->params[A3] = -20;
+    robot->params[A1] = -750;
+    robot->params[A2] = -180;
+    robot->params[A3] = -41;
     robot->params[B4] = 0;
 
     interface_param_init(&robot->oled_config, robot->params[0]);

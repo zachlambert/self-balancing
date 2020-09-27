@@ -38,11 +38,11 @@ void robot_init(RobotHandle robot_handle)
     Robot *robot = robot_handle;
     robot->oled_config = oled_create_config();
 
-    robot->params[A1] = -200;
-    robot->params[A2] = -100;
-    robot->params[A3] = -20;
-    robot->params[B4] = 4;
-    robot->params[L1] = 4;
+    robot->params[A1] = -750;
+    robot->params[A2] = -180;
+    robot->params[A3] = -41;
+    robot->params[B4] = 0;
+    robot->params[L1] = -4;
     robot->params[L2] = -4;
 
     interface_param_init(&robot->oled_config, robot->params[A1]);
@@ -62,15 +62,8 @@ void robot_loop_active(RobotHandle robot_handle)
     robot->x[X_PSI_2_DOT] =
         (0.5*R_D_ratio*ETA_1)*robot->base.y[2] - (0.5*R_D_ratio*ETA_2)*robot->base.y[Y_PSI_2_DOT];
 
-    robot->x[X_THETA] = robot->base.y[Y_THETA];// - robot->x[X_BIAS];
-
-    robot->x[X_THETA_DOT] += (
-        LAMBDA_2 * robot->x[X_THETA]
-        - 0.5 * (ETA_1 * robot->base.u[U_1] + ETA_2 * robot->base.u[U_2])
-        + robot->params[L1] * (robot->base.y[Y_THETA_DOT] - robot->x[X_THETA_DOT])
-    ) * robot->base.dt;
-    
-    robot->x[X_BIAS] -= robot->params[L2] * (robot->base.y[Y_THETA_DOT] - robot->x[X_THETA_DOT]);
+    robot->x[X_THETA] = robot->base.y[Y_THETA] - robot->x[X_BIAS];
+    robot->x[X_BIAS] += robot->params[L1] * (robot->x[X_THETA]);
 
     robot->base.u[U_1] = - (
         robot->x[X_THETA] * robot->params[A1]*ETA_1_inv +

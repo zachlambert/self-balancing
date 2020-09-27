@@ -1,6 +1,6 @@
 #!/bin/sh
 cd build
-name=controller_2
+name=controller_1
 
 avr-objcopy -j .text -j .data -O ihex $name.elf $name.hex
 avr-size --format=avr --mcu=m328p $name.elf
