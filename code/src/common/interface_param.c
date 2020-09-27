@@ -90,14 +90,25 @@ void interface_param_update(
     }
 
     static char line[INTERFACE_LINE_SIZE];
-    snprintf(
-        line,
-        INTERFACE_LINE_SIZE,
-        "%s: %d.%d\n",
-        param_names[param_i],
-        (int16_t)(floorf(param_value)),
-        (int16_t)(floorf((param_value-floorf(param_value)) * 1000))
-    );
+    if (param_value>0) {
+        snprintf(
+            line,
+            INTERFACE_LINE_SIZE,
+            "%s: %d.%d\n",
+            param_names[param_i],
+            (int16_t)(floorf(param_value)),
+            (int16_t)(floorf((param_value-floorf(param_value)) * 1000))
+        );
+    } else {
+        snprintf(
+            line,
+            INTERFACE_LINE_SIZE,
+            "%s: -%d.%d\n",
+            param_names[param_i],
+            (int16_t)(floorf(-param_value)),
+            (int16_t)(floorf((-param_value-floorf(-param_value)) * 1000))
+        );
+    }
 
     oled_clear(oled_config);
     oled_print_string(oled_config, line);

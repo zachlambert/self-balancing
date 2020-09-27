@@ -54,3 +54,16 @@ target_include_directories(test_oscillatory.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
 target_link_libraries(test_oscillatory.elf ${ZARDUINO_LIB})
+
+add_executable(test_pwm.elf
+    src/common/buffer.c
+    src/common/interface_common.c
+    src/common/interface_uart.c
+    src/common/main.c
+    src/common/motors.c
+    src/robot/test_pwm.c
+)
+target_include_directories(test_pwm.elf
+    PRIVATE include /usr/local/include /usr/lib/avr/include
+)
+target_link_libraries(test_pwm.elf ${ZARDUINO_LIB})

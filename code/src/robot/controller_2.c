@@ -10,12 +10,13 @@
 #define A2 1
 #define A3 2
 #define B4 3
+#define L1 4
 
 typedef struct {
     RobotBase base;
     OLEDConfig oled_config;
     float params[PARAM_COUNT];
-    float x[4];
+    float x[5];
 } Robot;
 
 RobotHandle robot_create(void)
