@@ -20,7 +20,8 @@ void common_init(RobotHandle robot_handle)
 
     timer0_init_as_timer_accurate();
 
-    interface_common_init(); }
+    interface_common_init();
+}
 
 uint64_t current_ticks = 0;
 uint64_t prev_ticks, delta_ticks;

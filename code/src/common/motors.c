@@ -22,9 +22,9 @@ void psi_right_callback(void)
     psi_right_count += psi_right_dir;
 }
 
-const size_t BUFFER_N = 8;
-const float AVERAGE_WINDOW[8] = {
-    0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125
+#define BUFFER_N 1
+const float AVERAGE_WINDOW[BUFFER_N] = {
+    1
 };
 
 void motors_init(void)
