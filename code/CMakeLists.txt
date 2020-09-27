@@ -28,6 +28,19 @@ target_include_directories(controller_1.elf
 )
 target_link_libraries(controller_1.elf ${ZARDUINO_LIB})
 
+add_executable(controller_2.elf
+    src/common/buffer.c
+    src/common/interface_common.c
+    src/common/interface_param.c
+    src/common/main.c
+    src/common/motors.c
+    src/robot/controller_2.c
+)
+target_include_directories(controller_2.elf
+    PRIVATE include /usr/local/include /usr/lib/avr/include
+)
+target_link_libraries(controller_2.elf ${ZARDUINO_LIB})
+
 add_executable(test_transient.elf
     src/common/buffer.c
     src/common/interface_common.c

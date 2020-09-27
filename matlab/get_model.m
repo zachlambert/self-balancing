@@ -15,8 +15,8 @@ function [A, B, C, D] = get_model()
     C = [
         1 0 0 0
         0 1 0 0
-        0 0 1/(R*eta1) D/(R*eta1)
-        0 0 1/(R*eta2) -D/(R*eta2)
+        0 -1 1/R D/R
+        0 -1 1/R -D/R
     ];
     D = zeros(4, 4);
 end
