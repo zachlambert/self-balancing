@@ -15,31 +15,31 @@ find_library(ZARDUINO_LIB
     PATHS /usr/local/lib
 )
 
-add_executable(controller_1.elf
+add_executable(state_space_debug.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/interface_param.c
     src/common/main.c
     src/common/motors.c
-    src/robot/controller_1.c
+    src/state_space/debug.c
 )
-target_include_directories(controller_1.elf
+target_include_directories(state_space_debug.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(controller_1.elf ${ZARDUINO_LIB})
+target_link_libraries(state_space_debug.elf ${ZARDUINO_LIB})
 
-add_executable(controller_2.elf
+add_executable(observer_debug.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/interface_param.c
     src/common/main.c
     src/common/motors.c
-    src/robot/controller_2.c
+    src/observer/debug.c
 )
-target_include_directories(controller_2.elf
+target_include_directories(observer_debug.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(controller_2.elf ${ZARDUINO_LIB})
+target_link_libraries(observer_debug.elf ${ZARDUINO_LIB})
 
 add_executable(test_transient.elf
     src/common/buffer.c
@@ -47,7 +47,7 @@ add_executable(test_transient.elf
     src/common/interface_uart.c
     src/common/main.c
     src/common/motors.c
-    src/robot/test_transient.c
+    src/test/transient.c
 )
 target_include_directories(test_transient.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
@@ -61,22 +61,22 @@ add_executable(test_oscillatory.elf
     src/common/interface_uart.c
     src/common/main.c
     src/common/motors.c
-    src/robot/test_oscillatory.c
+    src/test/oscillatory.c
 )
 target_include_directories(test_oscillatory.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
 target_link_libraries(test_oscillatory.elf ${ZARDUINO_LIB})
 
-add_executable(test_pwm.elf
+add_executable(test_constant.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/interface_uart.c
     src/common/main.c
     src/common/motors.c
-    src/robot/test_pwm.c
+    src/test/constant.c
 )
-target_include_directories(test_pwm.elf
+target_include_directories(test_constant.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(test_pwm.elf ${ZARDUINO_LIB})
+target_link_libraries(test_constant.elf ${ZARDUINO_LIB})
