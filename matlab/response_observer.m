@@ -12,15 +12,16 @@ K = [
 
 Cinv = inv(C(2:4, 2:4));
 
-L51 = 16;
-L22 = 8;
-L11 = 8;
-Lvel = 1;
+L11 = 5;
+L22 = 5;
+L51 = 5;
+L52 = 0;
+Lvel = 0;
 Ltop = [
     L11 0 0 0
 ];
 Lmid = [[0;0;0], diag([L22, Lvel, Lvel], 0) * Cinv];
-Lbot = [L51 0 0 0];
+Lbot = [L51 L52 0 0];
 L = [Ltop; Lmid; Lbot];
 L
 eig(A - L*C)
