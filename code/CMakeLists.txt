@@ -28,6 +28,18 @@ target_include_directories(state_space_debug.elf
 )
 target_link_libraries(state_space_debug.elf ${ZARDUINO_LIB})
 
+add_executable(state_space_release.elf
+    src/common/buffer.c
+    src/common/interface_common.c
+    src/common/main.c
+    src/common/motors.c
+    src/state_space/release.c
+)
+target_include_directories(state_space_release.elf
+    PRIVATE include /usr/local/include /usr/lib/avr/include
+)
+target_link_libraries(state_space_release.elf ${ZARDUINO_LIB})
+
 add_executable(observer_debug.elf
     src/common/buffer.c
     src/common/interface_common.c

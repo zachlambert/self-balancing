@@ -42,7 +42,7 @@ void robot_init(RobotHandle robot_handle)
     robot->params[A1] = -600;
     robot->params[A2] = -150;
     robot->params[A3] = -30;
-    robot->params[B4] = 4;
+    robot->params[B4] = 0;
     robot->params[L52] = -1.55;
 
     interface_param_init(&robot->oled_config, robot->params[A1]);
@@ -57,9 +57,9 @@ void robot_loop_active(RobotHandle robot_handle)
     Robot *robot = robot_handle;
 
     robot->x[X_V] = R*robot->base.y[Y_THETA_DOT] +
-        (0.5*R*ETA_1)*robot->base.y[2] + (0.5*R*ETA_2)*robot->base.y[3];
+        (0.5*R*ETA_1)*robot->base.y[Y_PSI_1_DOT] + (0.5*R*ETA_2)*robot->base.y[Y_PSI_2_DOT];
     robot->x[X_OMEGA] =
-        (0.5*R_D_ratio*ETA_1)*robot->base.y[2] - (0.5*R_D_ratio*ETA_2)*robot->base.y[Y_PSI_2_DOT];
+        (0.5*R_D_ratio*ETA_1)*robot->base.y[Y_PSI_1_DOT] - (0.5*R_D_ratio*ETA_2)*robot->base.y[Y_PSI_2_DOT];
 
     // X_THETA_DOT = Expected X_THETA_DOT at this timestep
     // Actual X_THETA - expected X_THETA

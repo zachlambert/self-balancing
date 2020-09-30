@@ -25,7 +25,7 @@ int main(void)
     ADCConfig adc_config = adc_create_config();
     adc_initialise(&adc_config);
 
-    uint8_t tx_payload[5];
+    uint8_t tx_payload[4];
 
     Pin pin_vertical = PIN_ARDUINO_A0;
     Pin pin_horizontal = PIN_ARDUINO_A1;
