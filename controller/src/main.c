@@ -43,7 +43,7 @@ int main(void)
         tx_payload[1] = vert>>8;
         tx_payload[2] = horiz;
         tx_payload[3] = horiz>>8;
-        radio_write_tx(&radio_config, tx_payload, 5);
+        radio_write_tx(&radio_config, tx_payload, 4);
 
         printf("%i %i\n", vert, horiz);
         delay(100);

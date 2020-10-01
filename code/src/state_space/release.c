@@ -48,7 +48,7 @@ void robot_init(RobotHandle robot_handle)
 
     robot->params[A1] = -750;
     robot->params[A2] = -180;
-    robot->params[A3] = -630;
+    robot->params[A3] = -300;
     robot->params[B4] = 0;
 }
 
@@ -58,13 +58,16 @@ void robot_loop_active(RobotHandle robot_handle)
 
     static RadioRxStatus rx_status;
     static uint8_t data_in[4];
-    rx_status = radio_read_rx(&robot->radio_config, data_in, 4);
-    if (rx_status != RADIO_RX_STATUS_NOT_USED &&
-        rx_status != RADIO_RX_STATUS_EMPTY)
-    {
-        robot->cmd[0] = (float)(data_in[0] | data_in[1]<<8)*(0.5/1024.0);
-        robot->cmd[1] = (float)(data_in[2] | data_in[3]<<8)*(1.5/1024.0);
-        delay(1000);
+    static size_t radio_counter = 0;
+    if (++radio_counter == 10) {
+        radio_counter = 0;
+        rx_status = radio_read_rx(&robot->radio_config, data_in, 4);
+        if (rx_status != RADIO_RX_STATUS_NOT_USED &&
+            rx_status != RADIO_RX_STATUS_EMPTY)
+        {
+            robot->cmd[0] = ((int16_t)(data_in[0] | data_in[1]<<8))/1024.0;
+            robot->cmd[1] = (float)((int16_t)(data_in[2] | data_in[3]<<8))*(1.5/1024.0);
+        }
     }
 
     robot->x[0] = robot->base.y[0];
