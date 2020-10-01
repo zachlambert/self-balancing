@@ -47,10 +47,9 @@ inline void read_sensors(RobotHandle robot_handle)
     );
     robot->y[Y_THETA_DOT] = robot->mpu6050_data.gyro[1] * 0.01745;
 
-    // Don't use phi_dot
-    // robot->phi_dot =
-    //     cos(robot->theta) * robot->mpu6050_data.gyro[2] * 0.01745
-    //     - sin(robot->theta) * robot->mpu6050_data.gyro[0] * 0.01745;
+    robot->y[Y_PHI_DOT] =
+        cos(robot->y[Y_THETA]) * robot->mpu6050_data.gyro[2] * 0.01745
+        - sin(robot->y[Y_THETA]) * robot->mpu6050_data.gyro[0] * 0.01745;
 }
 
 inline void update_state(RobotHandle robot_handle)
