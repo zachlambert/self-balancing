@@ -5,17 +5,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PARAM_COUNT 4
 #define A1 0
 #define A2 1
 #define A3 2
 #define B4 3
+#define V_CMD 4
+#define OMEGA_CMD 5
+#define PARAM_COUNT 6
+
+#define X_THETA 0
+#define X_THETA_DOT 1
+#define X_VEL 2
+#define X_OMEGA 3
+#define STATE_COUNT 4
 
 typedef struct {
     RobotBase base;
     OLEDConfig oled_config;
     float params[PARAM_COUNT];
-    float x[4];
+    float x[STATE_COUNT];
 } Robot;
 
 RobotHandle robot_create(void)
@@ -34,35 +42,37 @@ void robot_init(RobotHandle robot_handle)
     robot->params[A2] = -180;
     robot->params[A3] = -41;
     robot->params[B4] = 0;
+    robot->params[V_CMD] = 0;
+    robot->params[OMEGA_CMD] = 0;
 
     interface_param_init(&robot->oled_config, robot->params[0]);
 }
 
 const char *param_names[PARAM_COUNT] = {
-    "A1", "A2", "A3", "B4"
+    "A1", "A2", "A3", "B4", "V_CMD", "OM_CMD"
 };
 
 void robot_loop_active(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
 
-    robot->x[0] = robot->base.y[0];
-    robot->x[1] = robot->base.y[1];
-    robot->x[2] = (0.5*R*ETA_1)*robot->base.y[2] + (0.5*R*ETA_2)*robot->base.y[3];
-    robot->x[3] = (0.5*R_D_ratio*ETA_1)*robot->base.y[2] - (0.5*R_D_ratio*ETA_2)*robot->base.y[3];
+    robot->x[X_THETA] = robot->base.y[Y_THETA];
+    robot->x[X_THETA_DOT] = robot->base.y[Y_THETA_DOT];
+    robot->x[X_VEL] = get_velocity(robot->base.y) - robot->params[V_CMD];
+    robot->x[X_OMEGA] = robot->base.y[Y_PHI_DOT] - robot->params[OMEGA_CMD];
 
     robot->base.u[U_1] = - (
-        robot->x[0] * robot->params[A1]*ETA_1_inv +
-        robot->x[1] * robot->params[A2]*ETA_1_inv +
-        robot->x[2] * robot->params[A3]*ETA_1_inv +
-        robot->x[3] * robot->params[B4]*ETA_1_inv
+        robot->x[X_THETA] * robot->params[A1]*ETA_1_inv +
+        robot->x[X_THETA_DOT] * robot->params[A2]*ETA_1_inv +
+        robot->x[X_VEL] * robot->params[A3]*ETA_1_inv +
+        robot->x[X_OMEGA] * robot->params[B4]*ETA_1_inv
     );
 
     robot->base.u[U_2] = - (
-        robot->x[0] * robot->params[A1]*ETA_2_inv +
-        robot->x[1] * robot->params[A2]*ETA_2_inv +
-        robot->x[2] * robot->params[A3]*ETA_2_inv -
-        robot->x[3] * robot->params[B4]*ETA_2_inv
+        robot->x[X_THETA] * robot->params[A1]*ETA_2_inv +
+        robot->x[X_THETA_DOT] * robot->params[A2]*ETA_2_inv +
+        robot->x[X_VEL] * robot->params[A3]*ETA_2_inv -
+        robot->x[X_OMEGA] * robot->params[B4]*ETA_2_inv
     );
 }
 

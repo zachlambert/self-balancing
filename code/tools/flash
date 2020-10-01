@@ -1,8 +1,13 @@
 #!/bin/sh
-cd build
-name=state_space_release
 
+if [ $# != 1 ]; then
+    echo "Usage: tools/flash [program name]"
+    echo "This will flash [program name].elf onto the device after converting to a hex file."
+    exit 1
+fi
+name=$1
+
+cd build
 avr-objcopy -j .text -j .data -O ihex $name.elf $name.hex
 avr-size --format=avr --mcu=m328p $name.elf
 avrdude -c usbtiny -p m328p -U flash:w:$name.hex:i
-# avrdude -c arduino -P /dev/ttyACM0 -p m328p -U flash:w:$name.hex:i

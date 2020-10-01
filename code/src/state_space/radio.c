@@ -7,18 +7,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PARAM_COUNT 4
 #define A1 0
 #define A2 1
 #define A3 2
 #define B4 3
+#define PARAM_COUNT 4
+
+#define X_THETA 0
+#define X_THETA_DOT 1
+#define X_VEL 2
+#define X_OMEGA 3
+#define STATE_COUNT 4
+
+#define CMD_VEL 0
+#define CMD_OMEGA 1
+#define CMD_COUNT 2
 
 typedef struct {
     RobotBase base;
     RadioConfig radio_config;
-    float cmd[2];
     float params[PARAM_COUNT];
-    float x[4];
+    float x[STATE_COUNT];
+    float cmd[CMD_COUNT];
 } Robot;
 
 RobotHandle robot_create(void)
@@ -65,15 +75,15 @@ void robot_loop_active(RobotHandle robot_handle)
         if (rx_status != RADIO_RX_STATUS_NOT_USED &&
             rx_status != RADIO_RX_STATUS_EMPTY)
         {
-            robot->cmd[0] = ((int16_t)(data_in[0] | data_in[1]<<8))/1024.0;
-            robot->cmd[1] = ((int16_t)(data_in[2] | data_in[3]<<8))/1024.0;
+            robot->cmd[CMD_VEL] = ((int16_t)(data_in[0] | data_in[1]<<8))/1024.0;
+            robot->cmd[CMD_OMEGA] = ((int16_t)(data_in[2] | data_in[3]<<8))/1024.0;
         }
     }
 
-    robot->x[0] = robot->base.y[0];
-    robot->x[1] = robot->base.y[1];
-    robot->x[2] = (0.5*R)*robot->base.y[2] + (0.5*R)*robot->base.y[3] - robot->cmd[0];
-    robot->x[3] = robot->base.y[Y_PHI_DOT] - robot->cmd[1];
+    robot->x[X_THETA] = robot->base.y[Y_THETA];
+    robot->x[X_THETA_DOT] = robot->base.y[Y_THETA_DOT];
+    robot->x[X_VEL] = get_velocity(robot->base.y) - robot->cmd[CMD_VEL];
+    robot->x[X_OMEGA] = robot->base.y[Y_PHI_DOT] - robot->cmd[CMD_OMEGA];
 
     robot->base.u[U_1] = - (
         robot->x[0] * robot->params[A1]*ETA_1_inv +

@@ -15,43 +15,43 @@ find_library(ZARDUINO_LIB
     PATHS /usr/local/lib
 )
 
-add_executable(state_space_debug.elf
+add_executable(state_space_params.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/interface_param.c
     src/common/main.c
     src/common/motors.c
-    src/state_space/debug.c
+    src/state_space/params.c
 )
-target_include_directories(state_space_debug.elf
+target_include_directories(state_space_params.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(state_space_debug.elf ${ZARDUINO_LIB})
+target_link_libraries(state_space_params.elf ${ZARDUINO_LIB})
 
-add_executable(state_space_release.elf
+add_executable(state_space_radio.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/main.c
     src/common/motors.c
-    src/state_space/release.c
+    src/state_space/radio.c
 )
-target_include_directories(state_space_release.elf
+target_include_directories(state_space_radio.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(state_space_release.elf ${ZARDUINO_LIB})
+target_link_libraries(state_space_radio.elf ${ZARDUINO_LIB})
 
-add_executable(observer_debug.elf
+add_executable(observer_params.elf
     src/common/buffer.c
     src/common/interface_common.c
     src/common/interface_param.c
     src/common/main.c
     src/common/motors.c
-    src/observer/debug.c
+    src/observer/params.c
 )
-target_include_directories(observer_debug.elf
+target_include_directories(observer_params.elf
     PRIVATE include /usr/local/include /usr/lib/avr/include
 )
-target_link_libraries(observer_debug.elf ${ZARDUINO_LIB})
+target_link_libraries(observer_params.elf ${ZARDUINO_LIB})
 
 add_executable(test_transient.elf
     src/common/buffer.c
