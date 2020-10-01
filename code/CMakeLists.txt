@@ -31,6 +31,7 @@ target_link_libraries(state_space_params.elf ${ZARDUINO_LIB})
 add_executable(state_space_radio.elf
     src/common/buffer.c
     src/common/interface_common.c
+    src/common/interface_radio.c
     src/common/main.c
     src/common/motors.c
     src/state_space/radio.c

@@ -17,6 +17,7 @@
 #define X_V 2
 #define X_OMEGA 3
 #define X_BIAS 4
+#define X_COUNT
 
 #define MAX_BIAS 0.3
 
@@ -24,7 +25,7 @@ typedef struct {
     RobotBase base;
     OLEDConfig oled_config;
     float params[PARAM_COUNT];
-    float x[5];
+    float x[X_COUNT];
 } Robot;
 
 RobotHandle robot_create(void)
@@ -56,10 +57,8 @@ void robot_loop_active(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
 
-    robot->x[X_V] = R*robot->base.y[Y_THETA_DOT] +
-        (0.5*R*ETA_1)*robot->base.y[Y_PSI_1_DOT] + (0.5*R*ETA_2)*robot->base.y[Y_PSI_2_DOT];
-    robot->x[X_OMEGA] =
-        (0.5*R_D_ratio*ETA_1)*robot->base.y[Y_PSI_1_DOT] - (0.5*R_D_ratio*ETA_2)*robot->base.y[Y_PSI_2_DOT];
+    robot->x[X_V] = get_velocity(robot->base.y);
+    robot->x[X_OMEGA] = robot->base.y[Y_PHI_DOT];
 
     // X_THETA_DOT = Expected X_THETA_DOT at this timestep
     // Actual X_THETA - expected X_THETA

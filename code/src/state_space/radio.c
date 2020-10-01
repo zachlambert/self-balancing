@@ -1,6 +1,7 @@
 #include "robot.h"
 #include "constants.h"
 #include "config.h"
+#include "interface_radio.h"
 #include "zarduino/comms/spi.h"
 #include "zarduino/module/radio.h"
 #include "zarduino/timing/delay.h"
@@ -18,10 +19,6 @@
 #define X_VEL 2
 #define X_OMEGA 3
 #define STATE_COUNT 4
-
-#define CMD_VEL 0
-#define CMD_OMEGA 1
-#define CMD_COUNT 2
 
 typedef struct {
     RobotBase base;
@@ -45,12 +42,7 @@ void robot_init(RobotHandle robot_handle)
     SPIConfig spi_config = spi_create_config();
     spi_init_master(&spi_config);
 
-    robot->radio_config = radio_create_config();
-    robot->radio_config.CSN = RADIO_CSN_PIN;
-    robot->radio_config.CE = RADIO_CE_PIN;
-    robot->radio_config.rx_base_address = 0xA0000000;
-    robot->radio_config.rx_pipe_addresses[0] = 0x12;
-    robot->radio_config.rx_payload_sizes[0] = 4;
+    interface_radio_init(&robot->radio_config);
 
     radio_init_as_receiver(&robot->radio_config);
     delay(10);
@@ -66,19 +58,7 @@ void robot_loop_active(RobotHandle robot_handle)
 {
     Robot *robot = robot_handle;
 
-    static RadioRxStatus rx_status;
-    static uint8_t data_in[4];
-    static size_t radio_counter = 0;
-    if (++radio_counter == 10) {
-        radio_counter = 0;
-        rx_status = radio_read_rx(&robot->radio_config, data_in, 4);
-        if (rx_status != RADIO_RX_STATUS_NOT_USED &&
-            rx_status != RADIO_RX_STATUS_EMPTY)
-        {
-            robot->cmd[CMD_VEL] = ((int16_t)(data_in[0] | data_in[1]<<8))/1024.0;
-            robot->cmd[CMD_OMEGA] = ((int16_t)(data_in[2] | data_in[3]<<8))/1024.0;
-        }
-    }
+    interface_radio_read_commands(&robot->radio_config, robot->cmd);
 
     robot->x[X_THETA] = robot->base.y[Y_THETA];
     robot->x[X_THETA_DOT] = robot->base.y[Y_THETA_DOT];
