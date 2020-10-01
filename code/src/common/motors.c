@@ -30,6 +30,8 @@ void motors_init(void)
     gpio_mode_input(MOTOR_RIGHT_FEEDBACK);
 
     timer1_init_as_pwm();
+    timer1_set_duty_cycle_a(0.999);
+    timer1_set_duty_cycle_b(0.999);
 
     interrupt_external_add_callback(
         INTERRUPT_EXTERNAL_0,

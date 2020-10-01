@@ -48,10 +48,10 @@ void robot_init(RobotHandle robot_handle)
     delay(10);
     radio_start(&robot->radio_config);
 
-    robot->params[A1] = -750;
-    robot->params[A2] = -180;
-    robot->params[A3] = -300;
-    robot->params[B4] = -50;
+    robot->params[A1] = -900;
+    robot->params[A2] = -100;
+    robot->params[A3] = -180;
+    robot->params[B4] = 40;
 }
 
 void robot_loop_active(RobotHandle robot_handle)

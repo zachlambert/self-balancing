@@ -18,5 +18,5 @@ function [A, B, C, D] = get_model()
         0 -1 1/R D/R
         0 -1 1/R -D/R
     ];
-    D = zeros(4, 4);
+    D = zeros(4, 2);
 end

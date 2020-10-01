@@ -1,32 +1,7 @@
-[A, B, C] = get_model();
-[lambda2, omega2, eta1, eta2, R, D] = get_parameters();
-
-% Set poles manually
-p1 = -10+0.5i;
-p2 = -10-0.5i;
-p3 = -2;
-p4 = -2;
-alpha0 = -p1*p2*p3;
-alpha1 = p1*p2 + p1*p3 + p2*p3;
-alpha2 = -(p1 + p2 + p3);
-
-% Set poles by choosing values just in the valid
-% range for routh hurwitz
-a3 = 0 - 300;
-a2 = a3*R/omega2 - 400;
-a1 = lambda2*a2 / (a3*R - omega2*a2) - a3*R - 400;
-b4 = 20;
-
-a1
-a2
-a3
-b4
-
-K = [
-    a1/eta1, a2/eta1, a3/eta1, b4/eta1;
-    a1/eta2, a2/eta2, a3/eta2, -b4/eta2;
-];
-eig(A - B*K)
+[A, B, C, D] = get_model();
+sys = ss(A, B, C, D);
+[K, S, E] = lqr(sys, eye(4), 0.1*eye(2), zeros(4,2));
+[U, Sigma] = eig(A - B*K)
 K
 
 N = 1000;

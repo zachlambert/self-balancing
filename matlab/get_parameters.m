@@ -3,7 +3,7 @@ function [lambda2, omega2, eta1, eta2, R, D] = get_parameters()
     lambda2 = 0.0389^2;
     % Measure eta1 and eta2 as the mean (phi/PWM) with test_speed
     eta1 = 16.85;
-    eta2 = 17.82;
+    eta2 = 16.85;
     % Measure R and D manually
     R = 50e-3 / 2;
     D = 116e-3 / 2;

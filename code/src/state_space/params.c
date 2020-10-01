@@ -40,7 +40,7 @@ void robot_init(RobotHandle robot_handle)
 
     robot->params[A1] = -750;
     robot->params[A2] = -180;
-    robot->params[A3] = -41;
+    robot->params[A3] = -100;
     robot->params[B4] = 0;
     robot->params[V_CMD] = 0;
     robot->params[OMEGA_CMD] = 0;

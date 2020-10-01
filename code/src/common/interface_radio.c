@@ -28,7 +28,7 @@ void interface_radio_read_commands(RadioConfig *radio_config, float *cmd)
     if (rx_status != RADIO_RX_STATUS_NOT_USED &&
         rx_status != RADIO_RX_STATUS_EMPTY)
     {
-        cmd[CMD_VEL] = ((int16_t)(rx_buffer[0] | rx_buffer[1]<<8))/1024.0;
-        cmd[CMD_OMEGA] = ((int16_t)(rx_buffer[2] | rx_buffer[3]<<8))/1024.0;
+        cmd[CMD_VEL] = ((int16_t)(rx_buffer[0] | rx_buffer[1]<<8))*(1.0/512.0);
+        cmd[CMD_OMEGA] = ((int16_t)(rx_buffer[2] | rx_buffer[3]<<8))*(3.0/512.0);
     }
 }
